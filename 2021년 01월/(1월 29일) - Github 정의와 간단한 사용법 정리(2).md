@@ -75,11 +75,11 @@ __세 가지 상태__
 ![areas](https://user-images.githubusercontent.com/50399804/106289624-d5645d00-628c-11eb-9108-b863b02f1c4f.png)  
 
 
-    - Working Directory 는 프로젝트의 특정 버전을 Checkout 한 것이다.
+   - Working Directory 는 프로젝트의 특정 버전을 Checkout 한 것이다.
 
-    - Staging Area는 .git Directory 안에 있는데, 단순한 파일이며 곧 커밋할 파일에 대한 정보를 저장한다.  
-      기술용어로는 Index 라고 한다. 
+   - Staging Area는 .git Directory 안에 있는데, 단순한 파일이며 곧 커밋할 파일에 대한 정보를 저장한다.  
+     기술용어로는 Index 라고 한다. 
       
-    - .git Directory 는 Git 이 프로젝트의 메타데이터와 객체 데이터베이스를 저장하는 곳을 말한다.  
-       다른 컴퓨터에 있는 저장소(리모트) 를 Clone 할 때 .git Directory 가 만들어진다. 
+   - .git Directory 는 Git 이 프로젝트의 메타데이터와 객체 데이터베이스를 저장하는 곳을 말한다.  
+      다른 컴퓨터에 있는 저장소(리모트) 를 Clone 할 때 .git Directory 가 만들어진다. 
     
