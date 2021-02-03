@@ -46,4 +46,15 @@ private void callRunners(ApplicationContext context, ApplicationArguments args) 
   }
 ```
 > 내부에선 이렇게 동작
+
+__그런데...__
+
+![20210203_140413](https://user-images.githubusercontent.com/50399804/106700578-77d36600-6628-11eb-86ed-7a50073e46a9.png)
+
+__엄연히 Spring Batch 라는 Batch Application 을 Spring 에서는 지원하는데? 그럼 위의 인터페이스들은 언제 사용할까__
+  
+  
+그에 대한 해답은 [스택 오버 플로우](https://stackoverflow.com/questions/59328583/when-and-why-do-we-need-applicationrunner-and-runner-interface)에서 찾을 수 있다.  
+  
+  
   
