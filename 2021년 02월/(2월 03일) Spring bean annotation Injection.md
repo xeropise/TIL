@@ -30,7 +30,8 @@ context 설정 OK
 
 
 ![2104E64155132AC014](https://user-images.githubusercontent.com/50399804/106718463-6f892400-6644-11eb-934a-93da3c5f7942.jpg)
-> !!!
+> !!!  
+  내실수아니네 원본이 잘못된거자너
 
 ![6](https://user-images.githubusercontent.com/50399804/106718684-b8d97380-6644-11eb-90df-8b9afc38839f.PNG)
 
