@@ -15,6 +15,6 @@ ZeroCho 의 리액트 웹게임 강의 라우터 편 듣는 중, 알 수 없는 
 
 훅의 경우, 불러오는 리액트의 대상이 다르면 에러가 난다. 클래스의 경우 제대로 임포트가 된다.
 
-클래스를 쓰는 경우 @babel/plugin-proposal-class-properties 사용하여, 클래스 컴포넌트가 정상적으로 돌아가도록 보장해줘야 한다.
+클래스를 쓰는 경우 [@babel/plugin-proposal-class-properties](https://simsimjae.tistory.com/447) 사용하여, 클래스 컴포넌트가 정상적으로 돌아가도록 보장해줘야 한다.
 
 이와 관련된 내용은 리액트 공식홈페이지 [여기](https://ko.reactjs.org/warnings/invalid-hook-call-warning.html) 에서도 설명해 주고 있다.
