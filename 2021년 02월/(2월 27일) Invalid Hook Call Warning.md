@@ -8,7 +8,7 @@ ZeroCho 의 리액트 웹게임 강의 라우터 편 듣는 중, 알 수 없는 
 
 지금까지, 만들 게임 컴포넌트를 한 컴포넌트에 라우터 기능을 이용하여, 불러오는 중이 었다.
 
-![캡처](https://user-images.githubusercontent.com/50399804/109389007-ccc77b00-794d-11eb-9136-30a2b8a89a15.JPG)
+![캡처](https://user-images.githubusercontent.com/50399804/109389186-ca195580-794e-11eb-8b0f-39f6aff403f7.JPG)
 
 
 원인은 3번이고 다음과 같다.
