@@ -77,4 +77,3 @@ __[버퍼링 ??](http://cloudrain21.com/mysql-innodb-basic-performance-tunning)_
 - 성능이 더 좋아질 것으로 생각하고 불필요하게 Unique Index 를 생성하지 말자.
 
 - 어느 컬럼에 Unique Index 가 존재하는 경우, 해당 컬럼과 비슷한 성질의 다른 컬럼에 Index 를 만들필요는 없다.
-- 
