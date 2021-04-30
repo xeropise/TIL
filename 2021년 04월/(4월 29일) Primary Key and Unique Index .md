@@ -49,3 +49,32 @@ _[Clustered Index, NonClustered Index](https://mongyang.tistory.com/75)_
 
 - Unique: 인덱스 값이 중복되지 않는 인덱스
 - Non-Unique: 인덱스 데이터가 중복되는 인덱스
+
+#### Index read (읽기)
+
+- Unique Index 가 빠르다고 생각할 수 있는데, 이는 전혀 사실이 아니며 유니크 인덱스는 값이 유일하므로 값을 1개만 읽어 들이면 되고, 그냥 인덱스는 여러 개 읽어들어야 하는 것이 사실이지만, 사실 상 인덱스가 한번 읽어들여져서 각각 값을 비교하는 단계에서는 이미 CPU가 처리를 담당하고 있다. 그래서 성능상 영향이 거의 없다고 볼 수 있다.
+
+- 인덱스는 유니크한 것들보다 중복이 허용되어 처음에 LOAD 해야 할 양이 많아 느린것 뿐이지, 인덱스 속성에 자체에 의한 Delay 는 아니다.
+
+- Unique Index 와 Index 의 읽기 성능은 거의 차이가 없다.
+
+#### Index write (쓰기)
+
+- Unique Index 가 적용되어 있는 컬럼에 새로운 값이 INSERT 될 때는 값의 중복을 체크해야 하는 한 단계 과정이 더 필요하므로, 일반 인덱스 보다 느리다. 
+
+- 중요한점은 MySQL 이 중복 값을 체크할 때 read Lock 을 걸고, 쓰기를 할때는 writeLock 을 사용하는데, 여기서 DeadLock 이 아주 빈번하게 발생한다
+
+- InnoDB Engine 을 사용하는 경우, 인덱스 키의 저장을 버퍼링 할 수 있으나, Unique Index 의 경우 중복체크로 인해 버퍼링이 불가능하다.
+
+__[버퍼링 ??](http://cloudrain21.com/mysql-innodb-basic-performance-tunning)__
+
+- Unique Index 는 중복체크라는 과정으로 인해 Index 보다 쓰기가 더 느리다.
+
+### Unique Index 사용 시 주의점
+
+- 유니크한 성질(유일성)이 필요한 데이터 컬럼이라면 Unique Index를 생성하는게 당연하다.
+
+- 성능이 더 좋아질 것으로 생각하고 불필요하게 Unique Index 를 생성하지 말자.
+
+- 어느 컬럼에 Unique Index 가 존재하는 경우, 해당 컬럼과 비슷한 성질의 다른 컬럼에 Index 를 만들필요는 없다.
+- 
