@@ -1,5 +1,7 @@
 - 자바에서 이미지를 다루기전에 자바에서 파일의 입출력을 어떻게 다루는지 정의 해보자.
 
+### 자바 IO (입출력)
+
 ![img_c_stream](https://user-images.githubusercontent.com/50399804/118989209-d0065c00-b9bc-11eb-950c-22092a35848a.png)
 
 - 자바에서는 파일이나 콘솔의 입출력을 직접 다루지 않고, 스트림(stream) 이라는 흐름을 통해 다룬다. 영어의 뜻으로는 '흐르는 시냇물' 을 의미한다.
@@ -81,3 +83,22 @@
 | BufferedReader | BufferedWriter | 버퍼를 이용한 입출력                                                            |
 | PushbackReader | X              | 다른 입력 스트림에 버퍼를 이용하여 push back이나 unread와 같은 기능을 추가함.   |
 | X              | PrintWriter    | 다른 출력 스트림에 버퍼를 이용하여 다양한 데이터를 출력하기 위한 기능을 추가함. |
+
+- 위와 같은 클래스는 아니지만 콘솔과 같은 표준 입출력 장치를 위해 System 이라는 표준 입출력 클래스도 있다. java.lang 패키지에 포함되어 있다. 자바에서 기본적으로 생성하기 때문에 별도로 생성할 필요가 없다.
+
+<br>
+
+### [File](https://docs.oracle.com/javase/8/docs/api/java/io/File.html) 클래스
+
+- 앞에서 설명한 자바 IO 클래스를 이용하면 파일을 통해 입출력 작업을 수행할 수 있으나, 파일의 제거나 디렉터리에 관한 작업은 이를통해 수행할 수 없다.
+
+- 자바는 입출력 작업을 제외한 파일과 디렉터리에 관한 작업을 File 클래스를 통해 처리하도록 하고 있다. File 인스턴스는 파일 일수도, 디렉터리 일 수도 있다.
+
+- Windows 에서는 \ (역 슬래시) 가 구분자이나, Linux 및 Unix 시스템에서는 / (슬래시) 가 구분자로 사용되는데 개발 시 [JVM 이 운영체제를 판단하여 알맞은 값을 설정해주는 메소드](https://docs.oracle.com/javase/8/docs/api/java/io/File.html#separator)도 있다.
+  **사용법 예시**
+
+```java
+File file = new File("C:\work\abc.jpg");
+
+File file = new File("C:\work", "abc.jpg");
+```
