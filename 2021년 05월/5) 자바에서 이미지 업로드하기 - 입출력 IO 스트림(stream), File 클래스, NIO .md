@@ -95,10 +95,5 @@
 - 자바는 입출력 작업을 제외한 파일과 디렉터리에 관한 작업을 File 클래스를 통해 처리하도록 하고 있다. File 인스턴스는 파일 일수도, 디렉터리 일 수도 있다.
 
 - Windows 에서는 \ (역 슬래시) 가 구분자이나, Linux 및 Unix 시스템에서는 / (슬래시) 가 구분자로 사용되는데 개발 시 [JVM 이 운영체제를 판단하여 알맞은 값을 설정해주는 메소드](https://docs.oracle.com/javase/8/docs/api/java/io/File.html#separator)도 있다.
-  **사용법 예시**
 
-```java
-File file = new File("C:\work\abc.jpg");
-
-File file = new File("C:\work", "abc.jpg");
-```
+- 자세한 것은 [이 블로그](https://dololak.tistory.com/436?category=636500)를 참조하자.
