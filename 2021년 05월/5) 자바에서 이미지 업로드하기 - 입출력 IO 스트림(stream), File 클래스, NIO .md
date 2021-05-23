@@ -101,3 +101,59 @@
 <br>
 
 ### NIO
+
+- 자바4에 추가된 새 입출력 관련 모듈로 java.io 에 포함되어 있다. 자바7 에서 버전 업을 통해 IO 와 NIO 사이에 관련 없던 클래스 설계를 다시하고, 비동기 채널 등의 네트워크 지원을 대폭 강화 시킨 NIO2.API 가 추가되었다. NIO.2 는 JAVA.NIO 의 하위 패키지에 통합되어 있다. 참고로 NIO의 N 은 NON-BLOCKING 이 아니라 NEW 이다.
+
+- 기존의 전형적인 텍스트 파일을 읽는 자바 코드는 이렇다.
+
+```java
+public static void main(String[] args) {
+   File file = new File("C:\\test.txt");
+
+   if (file.isFile()) {
+      try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+         String line;
+         while ((line = br.readLine()) != null) {
+            System.out.println(line);
+         }
+      } catch (IOException e) {
+         e.printStackTrace();
+      }
+   }
+}
+```
+
+- 이를 NIO 로 바꾸면 이렇다.
+
+```java
+public static void main(String[] args) {
+   Path path = Paths.get("C:\\test.txt");
+
+   if (Files.exists(path)) {
+      try (FileChannel channel = FileChannel.open(path, StandardOpenOption.READ)) {
+         ByteBuffer byteBuffer = ByteBuffer.allocate((int) Files.size(path));
+
+         channel.read(byteBuffer);
+
+         byteBuffer.flip();
+
+         System.out.println(Charset.defaultCharset().decode(byteBuffer).toString());
+      } catch (IOException e) {
+         e.printStackTrace();
+      }
+   }
+}
+```
+
+- 어떤 차이점들이 있는걸가? 근데 코드는 더 길어 보이는데 ;;
+  차이점들은 정리하면 이렇다.
+
+  ![다운로드 (1)](https://user-images.githubusercontent.com/50399804/119263861-bf9fec80-bc1b-11eb-8722-2c2a01797b57.png)
+
+<br>
+
+- IO의 Stream 은 입력 스트림과 출력 스트림이 구분 되어, 입/출력 별도의 생성이 필요하고, 동기(synchornous) 방식이기 때문에 입력과 출력이 다 될때까지 스레드는 멈춰 있어야 한다. 이러한 블로킹(blocking) 문제 때문에 멀티 스레드로 구현 하는 방법을 통해 일반적인 느린 네트워크 속도를 커버하곤 한다. 하지만 _멀티 스레드를 생성할 떄 드는 오버헤드와 스레드 전환 시 발생하는 오버헤드를 무시할 수 없다._
+
+- 반면, NIO는 채널이 데이터가 통과하고 처리한다는점에서 Stream과 역할이 비슷하지만, 동작 방식이 다르다. 입력과 출력을 구분하지 않고, 읽을 수도 쓸 수도 있다. 하나의 스레드가 다수의 연결을 담당할 수 있고, 양방향 입출력이 가능할뿐만 아니라 블로킹, 넌블로킹 방식을 모두 지원하기 때문에 입출력 작업 시, 스레드 INTERRUPT 시 빠져 나올 수 있다.
+
+- 또 채널은 [버퍼(Buffer)](https://dololak.tistory.com/84) 를 통해 데이터를 읽고 쓰는 것을 기본으로 하고, 셀렉터를 통하여 기존의 클라이언트 요청 하나당 스레드 하나를 생성해서 관리하는 단점을 개선하였다. (셀렉터와 버퍼는 네트워크 관련이라 이미지 업로드와는 관련이 없다...ㅠ 너무 어렵다 이건)
