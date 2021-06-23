@@ -95,3 +95,13 @@ threadpool.shutdown();
 - Node.js 와 Mysql 을 같이 쓰는 형태가 이렇다고 한다. Node.js 에서 Async 로 작업해도, DB 작업 호출 시 MySQL 드라이버가 Blocking 방식으로 동작한다고 한다.
 
 - 사실 나도 이러한 방식으로 나도 모르게 코딩을 많이하고 있는거 같다. 의도하지 않더라도 과정중에 Blocking 으로 동작하는 것이 하나라도 있다면 Blocking-Async 로 동작하는 것이다.
+
+---
+
+\* 참조 한곳
+
+```
+https://homoefficio.github.io/2017/02/19/Blocking-NonBlocking-Synchronous-Asynchronous/
+
+https://youtu.be/IdpkfygWIMk
+```
