@@ -37,12 +37,18 @@
 
 ## 대응방안
 
-- 사용자 입력값 검증을 반드시 서버단에서 해야 한다.
+1. 사용자 입력값 검증
 
-- 사용자 입력 문자열에서 HTML 코드로 인식될 수 있는 특수문자를 일반문자로 치환하여 처리해야 한다.
+   - 사용자 입력값 검증을 반드시 서버단에서 해야 한다.
 
-- 게시판 등에서 HTML 태그를 허용해야 하는 경우, HTML 태그 화이트리스트를 선정 후, 해당 태그만 허용하는 방식을 적용해야 한다.
+   - 사용자 입력 문자열에서 HTML 코드로 인식될 수 있는 특수문자를 일반문자로 치환하여 처리해야 한다.
 
-- 대표적인 JAVA XSS FILTER 로는 네이버의 [LUCY](https://github.com/naver/lucy-xss-servlet-filter) 필터가 있다.
+   - 게시판 등에서 HTML 태그를 허용해야 하는 경우, HTML 태그 화이트리스트를 선정 후, 해당 태그만 허용하는 방식을 적용해야 한다.
 
-- LUCY FILTER 는 FORM DATA 는 바꿔주는데 @RequestBody 로 전달되는 JSON 요청은 처리해주지 않는다고 한다. [여기](https://homoefficio.github.io/2016/11/21/Spring%EC%97%90%EC%84%9C-JSON%EC%97%90-XSS-%EB%B0%A9%EC%A7%80-%EC%B2%98%EB%A6%AC-%ED%95%98%EA%B8%B0/)와 [여기](https://jojoldu.tistory.com/470) 를 참조하자.
+   - 대표적인 JAVA XSS FILTER 로는 네이버의 [LUCY](https://github.com/naver/lucy-xss-servlet-filter) 필터가 있다.
+
+   - LUCY FILTER 는 FORM DATA 는 바꿔주는데 @RequestBody 로 전달되는 JSON 요청은 처리해주지 않는다고 한다. [여기](https://homoefficio.github.io/2016/11/21/Spring%EC%97%90%EC%84%9C-JSON%EC%97%90-XSS-%EB%B0%A9%EC%A7%80-%EC%B2%98%EB%A6%AC-%ED%95%98%EA%B8%B0/)와 [여기](https://jojoldu.tistory.com/470) 를 참조하자.
+
+2. 쿠키 httpOnly, secure 속성 활용
+
+   - httpOnly로 자바스크립트 실행을 통한 쿠키 접근을 막고, HTTPS 프로토콜 상에서의 암호화된 요청에서만 쿠키가 전송되도록 해야 한다.
