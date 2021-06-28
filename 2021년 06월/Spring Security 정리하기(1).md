@@ -129,7 +129,7 @@ Using generated security password: 4957f873-9b2c-4be6-94c8-9c5c542d977f
 <br>
 <br>
 
-## 스프링 핵심 객체(1)
+## 스프링 시큐리티 큰 그림 - 스프링 핵심 객체(1)
 
 ### [1. DelegatingFilterProxy](https://docs.spring.io/spring-security/site/docs/current/reference/html5/#servlet-delegatingfilterproxy)
 
@@ -368,3 +368,5 @@ public class SecurityConfig {
   - FilterSecurityInterceptor
 
   - SwitchUserFilter
+
+---
