@@ -152,3 +152,15 @@ public class ApiLoginFilter extends AbstractAuthenticationProcessingFilter {
     }
 
 ```
+
+<br>
+
+### [8. AuthenticationEntryPoint](https://docs.spring.io/spring-security/site/docs/current/reference/html5/#servlet-authentication-authenticationentrypoint)
+
+- AuthenticationEntryPoint는 클라이언트가 credentials을 요구하는 경우, HTTP response 를 보내기 위해 사용된다.
+
+- 가끔 클라이언트가 적극적으로 요청 자원에 username/password 와 같은 credentials를 포함시킨다.
+
+- 이러한 경우, 스프링 시큐리티는 이미 HTTP response 에 credentials를 제공하지 않는다.
+
+- 다른 경우에는, 클라이언트가 접근이 허가되지 않는 자원에 대해 비인증 요청을 하면, 이러한 경우 AuthenticationEntryPoint 가 클라이언트의 요청 credentials를 요청하기 위해 사용된다.
