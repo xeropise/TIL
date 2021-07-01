@@ -4,41 +4,26 @@
 
 - 질문은 이랬다. "스프링의 싱글턴 빈이 Stateful 하면 어떤 문제가 있을까요?"
 
-- Stateful? 상태가 꽉차있다? 바로 자유롭지 못하다는 생각이 들었고 나는 Stateful 한 빈은 강한 결속력을 가지고 있다.
-  (애매 모호하게) 인터페이스처럼 다형성 확보가 되지 못한다. 라고 대답했다.
+- Stateful? 상태가 꽉차있다? 필드에 값을 가지고 있다는 말인가? 그럼 값이 고정되어 있다는 뜻? 바로 자유롭지 못하다는 생각이 들었고 나는 Stateful 한 빈은 강한 결속력을 가지고 있다. 핵심 비즈니스 로직으로 사용되는 경우, (애매 모호하게) 인터페이스처럼 다형성 확보가 되지 못한다. 라고 대답했다.
 
-- 틀린 말은 아니라고 하셨지만, 내가 제대로 못한 이유는 분명할 것이다.
+- 틀린 말은 아니라고 하셨지만, 주된 이유는 Thread-Safe 하지 못하다는 답변이셨다. 내가 제대로 못한 이유는 분명할 것이다.
 
 - **내가 스프링 Bean에서의 Stateful, Stateless 하다는 말을 이해를 못한것이다. 대체 뭘까?**
 
-  <br>
+- 그래서 "싱글톤 방식" 에서 주의할점 에 대해서 검색해 봤더니 다음과 같은 답을 찾을 수 있었다.
 
-## Stateful?
+  - **싱글톤 방식은 무상태(stateless)로 설계해야 한다**
 
-- 이 단어가 어디서 언급이 될까 하고 찾아봤는데 무려 스프링 공홈에서 언급이 되었다.
+    - 특정 클라이언트에 의존적인 필드가 있으면 안된다. <br>
 
-- 그것도 주제는 Bean Scope 로..
+    - 특정 클라이언트가 값을 변경할 수 있는 필드가 있으면 안된다. <br>
 
-<br>
+    - 가급적 읽기만 가능해야 한다. <br>
 
-```
-4.4.2 The prototype scope
-The non-singleton, prototype scope of bean deployment results in the creation of a new bean instance every time a request for that specific bean is made (that is, it is injected into another bean or it is requested via a programmatic getBean() method call on the container). As a rule of thumb,
+    - 필드 대신에 자바에서 공유되지 않는, 지역변수, 파라미터, ThreadLocal 등을 사용해야 한다.
 
->> you should use the prototype scope for all beans that are stateful <<
+- 그렇다 이유는 간단했다. 싱글톤 방식으로 빈이 생성된다는 것은 공유되는 객체라는 뜻인데, 공유되는 객체가 변경되는 값이 있으면 되겠는가? 쓰레드가 동시 접근하는데 빈이 들고 있는 어떤 값이 계속적으로 변경된다면**(Stateful)**, 같은 요청이라도 다른결과가 발생할 수 있다는 것이다.
 
-, while the singleton scope should be used for stateless beans.
+- 의존성을 가지고있는 필드가 있으면 안된다는 말에서 내가 한 주장이 틀린 말은 아니지만 핵심적인 이유에는 멀티 쓰레드가 무조건 같은 객체를 쓰게해야한다는 말이었다.
 
-The following diagram illustrates the Spring prototype scope. Please note that a DAO would not typically be configured as a prototype, since a typical DAO would not hold any conversational state; it was just easier for this author to reuse the core of the singleton diagram.
-
-```
-
-> protoTypeBean 은 stateFul Bean 들을 위해 사용해라?
-
-<br>
-
-- 사실 실무에서 protoType Bean 을 사용하는 경우는 단 한번도 없다. 대체 protoTypeBean 이 어떤 역할을 하길래 stateFul 하다는 걸까?
-
-- 참고로 prototype Bean 은 스프링 컨테이너가 생명주기를 전부 관리하지 않는다. 객체 생성 후 의존성 주입 한 후, protoType bean 의 모든 관리 및 소멸은 사용자에게 맡긴다.
-
-- prototype Bean 은 ApplicationContext getBean 메서드로 해당 빈을 가져올 때마다 매번 새로운 인스턴스가 생성된다.
+- 다음엔... 제대로 대답해야지 ㅠㅠ
