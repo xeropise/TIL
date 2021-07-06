@@ -17,6 +17,14 @@
 | SERIALIZABLE     | 없음                                                  | SELECT - 공유 락 설정 및 유지, <br> 인덱스 공유 락 설정 및 유지 (다른 트랜잭션 INSERT 문 수행 방지) <br><br> UPDATE,DELETE - 독점 락 설정 및 유지 |
 
 <br>
+
+```sql
+SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+SET TRANSACTION ISOLATION LEVEL READ COMMITTED;
+SET TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+```
+
 <br>
 
 ---
