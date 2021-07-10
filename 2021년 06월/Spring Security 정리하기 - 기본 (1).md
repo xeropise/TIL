@@ -370,3 +370,13 @@ public class SecurityConfig {
   - SwitchUserFilter
 
 ---
+
+## Security 예외들 처리하는 방법
+
+![exceptiontranslationfilter](https://user-images.githubusercontent.com/50399804/125167067-8cb8b480-e1d9-11eb-8596-56d58351223a.png)
+
+- [Exceptiontranslationfilter](https://docs.spring.io/spring-security/site/docs/5.5.1/api/org/springframework/security/web/access/ExceptionTranslationFilter.html) 가 AccessDeniedException and AuthenticationException 예외들을 처리한다.
+
+  - user 가 인증받지 않은 경우에는 AuthenticationEntryPoint 가 처리
+
+  - user 가 인가받지 않은 경우에는 AccessDeniedHandler 가 처리한다.

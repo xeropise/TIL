@@ -166,3 +166,48 @@ public class ApiLoginFilter extends AbstractAuthenticationProcessingFilter {
 - 로그인 페이지로 리다이렉션 시키거나 [WWW-Authenticate](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/WWW-Authenticate) 헤더를 응답헤더에 전송시켜 인증을 요구한다.
 
 - AccessDeniedHandler 는 서버에 요청 시 액세스가 가능한 권한이 아닐 경우에 대하여 동작하고, AuthenticationEntryPoint 는 인증이 되지 않은 사용자가 요청을 했을 때 동작한다.
+
+```java
+@Configuration
+public class SecurityConfig extends WebSecurityConfigurerAdapter {
+
+    @Autowired
+    private CustomAuthenticationEntryPoint authenticationEntryPoint;
+
+    @Override
+    protected void configure(HttpSecurity http) throws Exception {
+        http
+                .authorizeRequests()
+                .antMatchers("/test/**").authenticated()
+                .and()
+                // 인증
+                .httpBasic()
+                .authenticationEntryPoint(authenticationEntryPoint)
+        ;
+    }
+}
+
+=============================================================================
+
+@Component
+public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint {
+
+    @Override
+    public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authEx)
+            throws IOException, ServletException {
+        // status를 401 에러로 지정
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        // json 리턴 및 한글깨짐 수정.
+        response.setContentType("application/json;charset=utf-8");
+        JSONObject json = new JSONObject();
+        String message = "잘못된 접근입니다";
+        json.put("code", "9999");
+        json.put("message", message);
+
+        PrintWriter out = response.getWriter();
+        out.print(json);
+    }
+}
+
+참조 https://lemontia.tistory.com/655
+```
