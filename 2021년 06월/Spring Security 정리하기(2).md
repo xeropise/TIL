@@ -159,8 +159,10 @@ public class ApiLoginFilter extends AbstractAuthenticationProcessingFilter {
 
 - AuthenticationEntryPoint는 클라이언트가 credentials을 요구하는 경우, HTTP response 를 보내기 위해 사용된다.
 
-- 가끔 클라이언트가 적극적으로 요청 자원에 username/password 와 같은 credentials를 포함시킨다.
+- 가끔 클라이언트가 자원을 요청하기 위해 username/password 와 같은 credentials를 포함시키는데 이러한 경우, 스프링 시큐리티는 credentials 을 제공할 필요가 없다.
 
-- 이러한 경우, 스프링 시큐리티는 이미 HTTP response 에 credentials를 제공하지 않는다.
+- 클라이언트가 접근이 허가되지 않는 자원에 대해 인증되지 않은 요청을 하면, credentials 을 요청하기 위해 사용되어진다.
 
-- 다른 경우에는, 클라이언트가 접근이 허가되지 않는 자원에 대해 비인증 요청을 하면, 이러한 경우 AuthenticationEntryPoint 가 클라이언트의 요청 credentials를 요청하기 위해 사용된다.
+- 로그인 페이지로 리다이렉션 시키거나 WWW-Authenticate 헤더를 응답헤더에 전송시켜 인증을 요구한다.
+
+- AccessDeniedHandler 는 서버에 요청 시 액세스가 가능한 권한이 아닐 경우에 대하여 동작하고, AuthenticationEntryPoint 는 인증이 되지 않은 사용자가 요청을 했을 때 동작한다.
