@@ -163,6 +163,6 @@ public class ApiLoginFilter extends AbstractAuthenticationProcessingFilter {
 
 - 클라이언트가 접근이 허가되지 않는 자원에 대해 인증되지 않은 요청을 하면, credentials 을 요청하기 위해 사용되어진다.
 
-- 로그인 페이지로 리다이렉션 시키거나 WWW-Authenticate 헤더를 응답헤더에 전송시켜 인증을 요구한다.
+- 로그인 페이지로 리다이렉션 시키거나 [WWW-Authenticate](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/WWW-Authenticate) 헤더를 응답헤더에 전송시켜 인증을 요구한다.
 
 - AccessDeniedHandler 는 서버에 요청 시 액세스가 가능한 권한이 아닐 경우에 대하여 동작하고, AuthenticationEntryPoint 는 인증이 되지 않은 사용자가 요청을 했을 때 동작한다.
