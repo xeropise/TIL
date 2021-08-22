@@ -107,3 +107,41 @@
        - 설정단계에서 평가된 코드들이 실행 단계에서 어떠한 변화도 보이지 않는 이유이다.
 
      - 설정 단계의 중요한 특징은 포함된 모든 것들이 build runs 마다 평가되어진다는 것이다. 그런 이유로 [설정 단계에서 비싼 작업들을 피하기](https://docs.gradle.org/current/userguide/authoring_maintainable_build_scripts.html#sec:minimize_logic_executed_configuration_phase) 것이 매우 중요하다.
+
+  4. Gradle은 여러 방법으로 확장이 가능하다.
+
+     - 만약 프로젝트를 오직 Gradle과 번들된 빌드 로직만을 사용해서 프로젝트를 빌드할 수 있다면 좋겠지만 거의 불가능하다. 대부분의 builds 는 커스텀 빌드 로직을 추가해야하는 특별한 요구사항을 가진것들이 있다.
+
+     - Gradle은 확장하기 위한 다양한 메카니즘을 제공한다.
+
+       - [Custom task types](https://docs.gradle.org/current/userguide/custom_tasks.html#custom_tasks)
+
+         - 어떤 작업을 존재하는 task 로 빌드를 원하지 않는다면 간단히 나 자신만의 task type을 작성할 수 있다. 전형적으로 [buildSrc](https://docs.gradle.org/current/userguide/organizing_gradle_projects.html#sec:build_sources) 안에 커스텀 task 타입을 위한 소스 파일을 넣는 것이 전형적인 방법이다. Gradle 이 제공하는 것과 비슷하게 사용할 수 있다.
+
+       - Custom task actions
+
+         - Task.doFirst() 그리고 Task.doLast() 같은 메서드를 통해 커스텀 빌드 로직을 task 앞 뒤로 실행할 수 있다.
+
+       - 프로젝트들과 tasks 를 위한 [추가 프로퍼티](https://docs.gradle.org/current/userguide/writing_build_scripts.html#sec:extra_properties)
+
+         - 프로젝트 혹은 task 에 나만의 프로퍼티를 추가할 수 있어 자신의 커스텀 Actions 나 다른 빌드 로직에 사용할 수 있다.
+
+         - 추가 프로퍼티는 Gradle은 core plugins 에 의해 만들어진 tasks 에 적용될 수 있다. (커스텀은 안되나봄)
+
+       - Custom conventions
+
+         - Conventions 는 builds 를 간단히 하는 가장 강력한 방법으로 사용자가 쉽게 이해하고 사용할 수 있다. [Java builds](https://docs.gradle.org/current/userguide/building_java_projects.html#building_java_projects) 와 같은 일반적인 프로젝트 구조들과 이름있는 conventions 를 사용하는 builds 로 보여진다. conventions 를 제공하는 자신만의 plugins 를 작성할 수도 있다.
+
+       - [Custom model](https://docs.gradle.org/current/userguide/implementing_gradle_plugins.html#modeling_dsl_like_apis)
+
+         - Gradle은 tasks, files 과 depedency configurations 를 넘어서 새로운 개념을 도입하는 것을 허락한다.
+
+         - build 에 [source sets](https://docs.gradle.org/current/userguide/building_java_projects.html#sec:java_source_sets)의 개념을 추가하는 대부분의 언어 plugins 을 볼 수 있다.
+
+         - build 프로세스의 적절한 모델링은 효율성과 사용의 쉬움을 향상 시킬 수 있다.
+
+  5. Build scripts가 API에 대하여 동작
+
+     - 실행될 코드로 Gradle의 build scripts 를 보는것은 매우 쉽다. 잘 디자인된 build scripts는 소프트웨어가 어떤 단계로 빌드되고, 어떻게 동작해야하는지 설명한다.
+
+  - [Groovy DSL Reference](https://docs.gradle.org/current/userguide/what_is_gradle.html) 나 [Javadocs](https://docs.gradle.org/current/javadoc/) 로 이루어져있는 API 서류를 통해 이를 확인하여 사용할 수 있다.
