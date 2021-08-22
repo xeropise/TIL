@@ -75,3 +75,35 @@
        - Inputs - Actions 가 사용하거나 동작할 값, 파일, 폴더들
 
        - Outputs - Actions 가 수정하거나 만들어낼 파일과 폴더들
+
+     - 사실상, 방금 언급했던 것들은 어떤 tasks 가 필요로 해지는가에 따라서 선택적일 수 있다. 몇몇 tasks ( 예로 [standard lifecycle tasks](https://docs.gradle.org/current/userguide/base_plugin.html#sec:base_tasks) ) 는 어떠한 Actions 도 가지고 있지 않다. 편리를 위해 많은 tasks를 군집해 놓은 것 들이다.
+
+     - 마지막으로 하나 중요한 것이 있는데, Gradle 의 [incremental build](https://docs.gradle.org/current/userguide/more_about_tasks.html#sec:up_to_date_checks) 지원은 거대하고 믿을만하다. 만약 실제로 clean 작업을 실행하는것을 원치 않는다면, 속도 향상을 위해 사용하지 마라.
+
+  3. Gradle 은 몇몇의 고정된 build 단계를 가지고 있다.
+
+     - Gradle은 3단계로 build scripts 를 평가하고 실행한다. 이것을 이해하는 것은 매우 중요하다.
+
+       1. 초기화
+
+       - build 를 위한 환경을 설치하고, 어떤 프로젝트들이 참여되어야 하는지 결정한다.
+
+       2. 구성
+
+       - 빌드를 위한 task graph 를 만들고 설정하고, 사용자가 실행하려는 task에 기반하여 어떤 tasks 가 실행되고 어떤 순서여야 하는지 결정한다.
+
+       3. 실행
+
+       - 설정 단계 끝에 선택된 tasks 을 실행한다.
+
+     - 위 3단계가 [Build Lifecycle](https://docs.gradle.org/current/userguide/build_lifecycle.html#build_lifecycle) 을 만든다.
+
+     - 잘 설계된 build scripts 는 [중요한 로직이보다는 선언적인 설정](https://docs.gradle.org/current/userguide/authoring_maintainable_build_scripts.html#sec:avoid_imperative_logic_in_scripts) 으로 구성된다.
+
+     - 그러한 설정들은 설정 단계 중에 이해할만하게 평가된 것들이다. 그런 이유로 많은 빌드가 task actions 를 가지고 있다.
+
+       - 예를 들면 doLast{} 혹은 doFirst {} block
+
+       - 설정단계에서 평가된 코드들이 실행 단계에서 어떠한 변화도 보이지 않는 이유이다.
+
+     - 설정 단계의 중요한 특징은 포함된 모든 것들이 build runs 마다 평가되어진다는 것이다. 그런 이유로 [설정 단계에서 비싼 작업들을 피하기](https://docs.gradle.org/current/userguide/authoring_maintainable_build_scripts.html#sec:minimize_logic_executed_configuration_phase) 것이 매우 중요하다.
