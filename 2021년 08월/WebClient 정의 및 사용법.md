@@ -15,5 +15,4 @@
 - Streaming up to or streaming down from a server
 ```
 
-- 사용법은 [여기](https://medium.com/@odysseymoon/spring-webclient-%EC%82%AC%EC%9A%A9%EB%B2%95-5f92d295edc0) 를 참조하자. 너무 잘 설명하고 있다.
-- 추가적으로 [여기](https://binux.tistory.com/56)를 참조하자.
+- 사용법은 [여기](https://binux.tistory.com/56)를 참조하자. 원문 번역 해 놓은 곳이라 내가 작성하는 것과 비교가 안됨
