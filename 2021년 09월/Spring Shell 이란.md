@@ -18,6 +18,8 @@ https://docs.spring.io/spring-shell/docs/2.0.0.RELEASE/reference/htmlsingle/
 
 - 튜토리얼을 한번 해보자. @ShellComponent 어노테이션을 클래스에 선언함으로써, 특정 클래스를 커맨드에 의해 동작하게 지정할 수 있다.
 
+- 또 커맨드로 실행할 메서드를 @ShellMethod 어노테이션을 지정함으로써 커맨드로 동작하게 할 수 있다. 아무것도 지정하지 않는다면 메소드명이 커맨드명이 된다.
+
 ```java
 @ShellComponent
 public class MyCommands {
@@ -38,8 +40,11 @@ public class MyCommands {
 java -jar target/demo....(jar 파일명)
 ```
 
+> -DskipTests 로 통합 테스트를 스킵하고 빌드할 수 있다. 지정하지 않으면 ApplicationContext를 통합 테스트가 만들고, 루프가 지속적으로 일어나거나 NPE로 크래쉬된다
+
 - 스프링 부트 실행과 동시에 다음과 같이 shell 커맨드 창이 뜬다
 
 ```java
-shell:>
+shell:> add 1 2
+3
 ```
