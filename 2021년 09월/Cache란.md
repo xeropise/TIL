@@ -6,7 +6,7 @@
 
   ![다운로드](https://user-images.githubusercontent.com/50399804/132229275-1f99fa2e-ca94-44c6-aa5a-c1fcd4773e57.png)
 
-  > 메모리 구조에 대한 설명은 [여기](https://gourmet-eundong.tistory.com/22)를 참조하자. [이 영상](https://youtu.be/c33ojJ7kE7M) 도 매우 잘 설명하고 있다.
+  > 캐시 메모리 구조에 대한 설명은 [여기](https://gourmet-eundong.tistory.com/22)를 참조하자. [이 영상](https://youtu.be/c33ojJ7kE7M) 도 매우 잘 설명하고 있다.
 
 - 데이터를 미리 저장해 놓으면, 계산이나 접근 시간 없이 빠른속도로 데이터에 접근 가능하다.
 
