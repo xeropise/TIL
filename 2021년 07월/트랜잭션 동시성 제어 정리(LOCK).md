@@ -138,6 +138,8 @@
 
 <br>
 
+- Mysql 에서 Lock은 [Select 쿼리](https://dev.mysql.com/doc/refman/8.0/en/innodb-locking-reads.html) 를 이용하거나 [트랜잭션 고립 수준을 설정](https://dev.mysql.com/doc/refman/8.0/en/innodb-transaction-isolation-levels.html)하여 걸 수 있다.
+
 ---
 
 <br>
