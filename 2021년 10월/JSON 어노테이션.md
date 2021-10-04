@@ -11,15 +11,15 @@
     <br>
     
     - 위 어노테이션을 클래스 혹은 변수 위에 추가시켜주면 해결 된다.
-
-<br>
-
+    
+    <br>
+    
 2. @JsonProperty
 
     - 객체의 JSON 변환 시 키 값을 마음대로 수정할 수 있도록 해 준다.
 
     <br>
-    
+
     - Maven 을 기준으로 다음 의존성이 필요하다. 
 
     ```XML
@@ -31,16 +31,16 @@
     ```
 
     <br>
-    
+
     - @JsonProperty("원하는이름") 으로 변수명 위에 사용하면 된다.
-    
+
     <br>
-    
+
     ```java
     @JsonProperty("user_id")
     private String userId;
     ```
-    
+
     <br>
-    
+
     - 위의 경우 {"userId":"xeropise"} 에서 {"user_Id":"xeropise"} 로 변환된다.
