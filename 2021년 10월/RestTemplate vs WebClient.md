@@ -4,7 +4,7 @@
 
 - HTTP Request 를 수행하는 동기 Client로 JDK의 HttpURLConnection, Apache HttpComponents 등, 같은 HTTP client 라이브러리 밑에서 동작한다.
 
-  - https://sjh836.tistory.com/141 를 참조해서 다른 라이브러리들의 특징을 확인하자.
+  - [여기](https://sjh836.tistory.com/141) 를 참조해서 다른 라이브러리들의 특징을 확인하자.
 
   
 
