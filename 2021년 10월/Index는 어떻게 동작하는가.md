@@ -69,3 +69,5 @@
 > https://dev.mysql.com/doc/refman/8.0/en/mysql-indexes.html
 >
 > https://jojoldu.tistory.com/243
+>
+> https://dev.mysql.com/doc/refman/8.0/en/multiple-column-indexes.html
