@@ -17,7 +17,7 @@
   
 
 - 높은 퍼포먼스를 이루기 위해, Redis는 인 메모리 데이터셋으로 동작하며, 사용 케이스에 따라서 디스크에 데이터셋을 정기적으로 저장한다거나 로그 커맨드를 남기는 등 다양한 작업을 할 수 있다.
-
+  - [Redis Persistence](https://joeylee.tistory.com/34)
   
 
 - Redis는 또한 비동기 replication을 지원해서 매우 빠른 논블럭킹 동기화와 auto-reconnection with partial resynchronization on net split의 작업을 할 수 있다.
