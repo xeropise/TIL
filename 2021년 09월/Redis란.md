@@ -32,3 +32,5 @@
   - LRU eviction of keys
   - Automatic failover
 
+- Redis는 Singled Thread로 동작하므로, 다중 Request 가 들어왔어도, 하나씩 처리를 한다. 그러므로 DB lock 같은 문제를 생각하지 않아도 된다.
+  - [참조](https://stackoverflow.com/questions/49304856/how-redis-deal-with-1000-requests-in-concurrency/49346017)
