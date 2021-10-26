@@ -155,3 +155,5 @@
 > https://alwayspr.tistory.com/44
 >
 > https://timewizhan.tistory.com/entry/%EB%B2%88%EC%97%AD-Concurrency-in-Spring-WebFlux
+>
+> https://www.baeldung.com/spring-webflux-concurrency
