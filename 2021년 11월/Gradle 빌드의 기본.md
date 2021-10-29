@@ -321,3 +321,21 @@ aGVsbG8gd29ybGQK
 - 멀티 프로젝트를 위해, project 의 builscript() method의 선언된 의존성은 모든 서브 프로젝트에서 사용 가능하다. 
   - Build Script 의존성은 Gradle plugins 으로 볼 수 있는데, 자세한 것은 [여기](https://docs.gradle.org/current/userguide/plugins.html#plugins) 서 확인하자.
 
+
+
+- builscript block 에서 선언된 의존성이나 리포지터리 값은 build.gradle 자체를 위한 값이지  application 을 위한 것이 아니다. 말하자면
+  - 위의 경우,  build.script에서 사용 할 의존성 선언이고, 아래의 경우 application을 위함이다.
+
+```
+buildscript {
+    dependencies {
+        classpath group: 'commons-codec', name: 'commons-codec', version: '1.2'
+    }
+}
+
+dependencies {
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
+}
+
+```
