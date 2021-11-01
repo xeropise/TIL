@@ -8,7 +8,7 @@
 
     - Gradle은 불필요한 작업을 task 만 실행함으로써 피할 수 있다.
 
-    - 빌드 캐시를 사용하여 이전에 혹은 다른 기계에서 실행된 task의 결과들을 다시 사용할 수 있다.
+    - [빌드 캐시](https://docs.gradle.org/current/userguide/build_cache.html)를 사용하여 이전에 혹은 다른 기계에서 실행된 task의 결과들을 다시 사용할 수 있다.
 
   - JVM 기반
 
