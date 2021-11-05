@@ -8,21 +8,11 @@ EXPLAIN [EXTENDED] SELECT select_options
 
 
 
-- EXPLAIN 을 사용함으로써, 테이블의 어느 곳에 인덱스를 추가해야만 SELECT 가 보다 빠르게 되는지 알 수 있다.
+- EXPLAIN 키워드를 사용함으로써, 내가 입력한 쿼리문이 어떻게 실행되었는지 확인이 가능하다.
+  - 쿼리 실행 속도의 경우 EXPLAIN ANALYZE ~ 로 확인 가능하다. (MySQL 8.0 이상)
 
-  
 
-- 옵티마이저가 최적의 순서로 테이블을 조인할 수 있는지 여부도 검사할 수 있다.
 
-  
-
-- SELECT 문에 명명한 테이블의 순서와 똑같이 조인 순서를 사용하도록 옵티마이저를 만들려면, SELECT 문 대신에 SELECT STRATIGH_JOIN 을 사용해서 시작하면 된다.
-
-  
-
-- EXPLAIN 은 SELECT 명령문에서 사용된 각 테이블 정보 열을 리턴한다.
-
-  
 
 - EXTENDED 키워드가 사용되면,  EXPLAIN 명령문 다음에 SHOW WARNINGS 명령문을 입력해서 볼 수 있는 기타 정보를 리턴한다.
 
@@ -32,50 +22,81 @@ EXPLAIN [EXTENDED] SELECT select_options
 
 - EXPLAIN을 통해서 나오는 정보는 테이블에 대한 정보이므로 다음과 같은 정보를 가지고 있다.
 
-![JyxfO](https://user-images.githubusercontent.com/50399804/130393454-ab320b7d-372b-4e6f-ab58-139f455d35ea.png)
+![mysql-explain3](https://user-images.githubusercontent.com/50399804/145250617-606ad7a9-b322-44f4-a7ca-5edf646f5921.png)
+
+
 
 - id
 
   - SELECT 식별자, 순차적인 번호
 
+    
+
+  - 실행 순서를 표시하는 숫자로, 조인할 때는 똑같은 ID가 표시가 된다.
+
+    
+
+  - 숫자가 작을 수록 먼저 수행된 것이므로, ID가 같은 값이라면 두 개 테이블의 조인이 이루어졌다고 해석할 수 있다.
+
+    
+
+  - ID가 같아 조인이 이뤄진 경우에서, 상위에 있는 경우 드라이빙 테이블, 하위에 있는 경우를 드리븐 테이블이라고 볼 수 있다.
+
+    
+
   
 
 - select_type
 
-  - SELECT에 대한 타입으로, 다음 종류 중 하나이다.
+  - SELECT 문의 출력 유형을 나타낸다. 다음 종류 중 하나이다. (밑줄의 경우 쿼리 튜닝의 대상으로 고려해볼 수 있다.)
 
-  | TYPE               | DESCRIPTION                                                  |
-  | ------------------ | ------------------------------------------------------------ |
-  | SIMPLE             | Simple __SELECT__ (not using __UNION__ or subqueries)        |
-  | PRIMARY            | Outermost(가장 바깥쪽) __SELECT__                            |
-  | UNION              | Second or later __SELECT__ statement in a __UNION__          |
-  | DEPENDENT UNION    | Second or later __SELECT__ statement in a __UNION__, dependent on outer query |
-  | UNION RESULT       | Result of a __UNION__                                        |
-  | SUBQUERY           | First __SELECT__ in subquery                                 |
-  | DEPENDENT SUBQUERY | First __SELECT__ in subquery, dependent on outer query       |
-  | DERIVED            | Derived table __SELECT__ (subquery in __FROM__ clause)       |
+  | TYPE                      | DESCRIPTION                                                  |
+  | ------------------------- | ------------------------------------------------------------ |
+  | SIMPLE                    | UNION이나 내부 쿼리가 없는 SELECT 문, 단순한 SELECT 구문     |
+  | PRIMARY                   | 서브쿼리가 포함된 SQL 문에서 첫 번째 SELECT 문에 해당하는 구문, UNION ALL 과 같은 쿼리의 경우 첫번째 실행되는 구문 |
+  | UNION                     | 합쳐진 SELECT 문에서 첫 번째 SELECT 구문을 제외한 이후의 SELECT 구문 |
+  | <u>DEPENDENT UNION</u>    | UNION 또는 UNION ALL을 사용하는 서브쿼리가 메인 테이블의 영향을 받은 경우, 첫 번째 단위 쿼리를 제외한 두 번째 제외 쿼리 |
+  | UNION RESULT              | UNION 구문으로 SELECT 절을 결합했을 때 출력,                 |
+  | SUBQUERY                  | 독립적으로 수행되는 서브쿼리                                 |
+  | <u>DEPENDENT SUBQUERY</u> | UNION 또는 UNION ALL을 사용하는 서브쿼리가 메인 테이블의 영향을 받은 경우, 첫 번째 단위 쿼리 |
+  | DERIVED                   | FROM 절에 작성된 서브쿼리(인라인 뷰)                         |
+  | UNCACHEABLE SUBQUERY      | 메모리에 상주하여 재활용되어야 할 서브쿼리가 재사용되지 못할 때 출력되는 유형, 사용자 정의 함수나 변수 혹은 함수를 사용하는 경우 |
+  | MATERIALIZED              | IN 절 구문에 연결된 서브쿼리가 임시 테이블을 생성한 뒤, 조인이나 가공 작업을 수행할 때 출력되는 유형 |
 
   
 
 - table
 
-  - 행과 열이 참조하는 테이블
+  - 행과 열이 참조하는 테이블, 테이블명을 표시하는 항목
+
+    
+
+  - 서브쿼리나 임시 테이블을 만들어서 별도의 작업을 수행할 때는 <subquery#> 이나 <derived#> 으로 출력되는데 여기서 #에 표시된 숫자가 실행계획에서 ID를 나타낸다.
+
+    -  <derived 2> 라면 ID가 2인 테이블이라는 뜻이다.
+
 
   
 
 - type
 
-  - 조인 타입으로 나열순은 가장 좋은 것부터 나쁜 것의 순서로 나열해보겠다.
+  - 테이블의 데이터를 어떻게 찾을지에 관한 정보를 제공하는 항목이다.
+
+    
+
+  - 풀테이블 스캔인지, 아니면 인덱스를 통해 바로 데이터를 찾아갈지 등을 해석가능하다.
+
+    
 
     - system
 
-      - 테이블의 하나의 열만 가지고 있는 경우로, const 조인 타입 중 특별한 경우
+      - 테이블의 데이터가 없거나 1개만 있는경우, 성능상 최상의 type
 
         
 
     - const
 
-      - 테이블은 적어도 하나의 매칭 테이블을 가지고 있는데, 쿼리가 시작되는 시점에서 이 테이블을 읽게 된다.
+      - 조회되는 데이터가 단 1건일 때 출력되는 유형, 성능상 매우 유리한 방식
 
         
 
@@ -100,176 +121,105 @@ EXPLAIN [EXTENDED] SELECT select_options
 
     - eq_ref
 
-      - 이전 테이블로부터 각 열의 조합하기 위해, 테이블의 열을 하나읽는다.
+      - 조인이 수행될 때 드리븐 테이블의 데이터에 접근하며 고유 인덱스 또는 기본 키로, 단 1건의 데이터를 조회하는 방식, 조인이 수행될 때 성능상 가장 유리한 경우로 성능상 가장 유리한 경우
 
         
-
-      - system 및 const 타입과 달리, 가장 최선의 가능 조인 타입으로 조인에 의해 인덱스의 모든 부분이 사용될 때 쓰이게 된다.
-
-        
-
-      - 이때 인덱스가 PRIMARY KEY 또는 UNIQUE 인덱스가 된다.
-
-        
-
-      - = 연산자를 사용해서 비교되는 인덱스된 컬럼용으로 사용될 수 있다. 
-
-        
-
-      - 비교 값은 이 테이블 전에 읽었던 테이블에서 컬럼을 사용한 수식 또는 상수(contant) 가 될 수 있다.
-
-      ```sql
-      SELECT * FROM ref_table, other_table
-      WHERE ref_Table.key_column = other_table.column;
-      
-      SELECT * FROm ref_table, other_table
-      WHERE ref_Table.key_column_part1 = other_table.column
-        AND ref_Table.key_column_part2 = 1;
-      ```
-
-      
 
     - ref
 
-      - 이전 테이블에서 읽어온 각각의 열을 조합하기 위해 테이블에서 매칭 되는 인덱스 값을 가진 모든열을 읽어온다.
+      - eq_ref와 유사한 유형이나 조인을 수행할 때 드리븐 테이블의 데이터 접근 범위가 2개 이상일 경우를 의미
 
         
 
-      - 만일 조인이 키의 좌측 끝 접두사만을 사용하거나 또는 키 값이 PK 또는 UNIQUE 인덱스가 아니라면 ref 가 사용된다.
-
-        (조인이 키 값을 기반으로 한 단일 열을 선택하지 않는다면)
+      - 드라이빙 테이블과 드리븐 테이블이 조인을 수행하면 일대다 관계가 된다. 
 
         
 
-      - 만약 사용된 키가 적은 수의 열에 대해서만 매치가 된다면, 좋은 조입 타입인 것이다.
+      - 드리븐 테이블의 데이터양이 많지 않을 때는 성능 저하를 크게 우려하지 않아도 되지만, 데이터양이 많다면 접근해야 할 데이터 범위가 넓어져 성능 저하의 원인이 되는지 확인해야 한다.
 
         
 
-      - = 또는 <=> 연산자를 사용해서 비교되는 인덱스된 컬럼에 대해 사용될 수 있다.
+        
 
-      ```sql
-      SELECT * FROM ref_table WHERE key_column=expr,
-      
-      SELECT * FROM ref_Table, other_table
-       WHERE ref_Table.key_column = other_Table.column;
-       
-       SELECT * FROM ref_Table, other_table
-        WHERE ref_table.key_column_part1 = other_table.column
-          AND ref_table.key_coluimn_part2 = 1;
-      ```
-
-      
 
     - ref_or_null
 
-      - ref와 유사하지만, null 값을 가지고 있는 열에 대해서도 검색을 한다는 점에서 차이가 있다. 이 조인 타입 최적화는 서브 쿼리를 해석할 때 자주 사용된다.
+      - ref와 유사하지만, IS NULL 구문에 대해 인덱스를 활용하도록 최적화된 방식
 
-      ```sql
-      SELECT * FROM ref_Table
-        WHERE key_column=expr OR key_column IS NULL;
-      ```
+        
+
+      - MySQL과 MariaDB는 NULL에 대해서도 인덱스를 활용하여 검색할 수 있으며, 이때 NULL은 가장 앞 쪽에 배치된다.
+
+        
+
+      - 검색할 NULL 데이터양이 많다면 SQL 튜닝의 대상이 된다.
+
+        ```sql
+        SELECT * FROM ref_Table
+          WHERE key_column=expr OR key_column IS NULL;
+        ```
+
+      
+
+    - fulltext
+
+      - 텍스트 검색을 빠르게 처리하기 위해 전문 인덱스(full text index)를 사용하여 데이터에 접근하는 방식
 
       
 
     - index_merge
 
-      - 인덱스 병합 최적화가 사용되었음을 나타낸다. 행과 열에 있는 key 컬럼은 사용된 인덱스 리스트를 가지고 있고, key_len 은 사용된 인덱스에 대해서 가장 긴 키 부분의 리스트를 가지고 있다.
+      - 결합된 인덱스들이 동시에 사용되는 유형, 특정 테이블에 생성된 2개 이상의 인덱스가 병합되어 동시에 적용된다. 이때 전문 인덱스는 제외
 
         
-
-    - unique_subquery
-
-      - IN 서브 쿼리에 대해서 ref 를 대체한다.
-      - unique_subquery 는 효율성을 위해 서브 쿼리를 대체하는 인덱스 룩업 함수 이다.
-
-    ```sql
-    value IN (SELECT primary_key FROm single_table WHERE some_expr)
-    ```
-
-    
-
-    - index_subquery
-      - unique_subquery 와 유사한 조인 타입으로, IN 서브 쿼리를 대체하지만 논-유니크 인덱스에 대해서도 동작한다.
-
-    ```sql
-    value IN (SELECT key_column FROm single_table WHERE some_expr)
-    ```
-
-    
 
     - range
 
-      - 주어진 범위에 들어 있는 열만을 추출하며, 열 선택은 인덱스를 사용한다. 결과 열에 있는 key 컬럼은 어떤 인덱스가 사용되었는지를 가리킨다.
+      - range 는 키 컬럼이 =, <>, >, >=, <, <=, IS NULL, <=>, BETWEEN 또는 IN 연산자를 사용할 때 범위 스캔을 수행하는 방식
 
         
 
-      - key_len 은 사용된 키에서 가장 긴 부분을 가진다.  ref 컬럼은 이 타입에 대해서는 NULL 값이 된다.
+      - 스캔할 범위가 넓으면 성능 저하의 요인이 될 수 있으므로 SQL 튜닝 검토 대상이 된다.
 
-        
-
-      - range 는 키 컬럼이 =, <>, >, >=, <, <=, IS NULL, <=>, BETWEEN 또는 IN 연산자를 사용하는 상수와 비교할 때 사용할 수 있다.
-
-    ```sql
-    SELECT * FROM tbl_name
-     WHERE key_column = 10;
-    
-    SELECT * FROM tbl_name
-     WHERE key_column BETWEEN 10 and 20;
-    
-    SELECT * FROM tbl_name
-     WHERE key_column IN (10, 20, 30);
-    
-    SELECT * FROM tbl_name
-     WHERE key_part1 = 10 AND key_part2 IN (10, 20, 30);
-    ```
-
-    
+      
 
     - Index
 
-      - 이 조인 타입은 ALL과 동일하지만, 인덱스 트리(index tree) 만을 스캔한다는 점에서 다르다.
+      - 인덱스 풀 스캔, 물리적인 인덱스 블록(block)을 처음부터 끝까지 훑는 방식
 
         
 
-      - 일반적으로, 보통의 인덱스 파일이 데이터 파일보다 작기 떄문에, ALL 보다는 빠르게 동작한다.
+      - 데이터를 스캔하는 대상이 인덱스라는 점이 다를 뿐, 테이블 풀 스캔 방식과 유사하다.
 
         
 
-      - 쿼리가 단일 인덱스의 일부분인 컬럼만을 사용할 때, 이 조인 타입을 사용한다.
+      - 인덱스는 보통 테이블보다 크기가 작으므로 테이블 풀 스캔 방식보다 빠를 가능성이 높다. 하지만 검색 대상이 많다면 풀 테이블 스캔을 유도하자.
 
-        
+      
 
     - ALL
 
-      - 이전 테이블에서 읽어온 각각의 열을 조합하기 위해, 전체 테이블 스캔(full table scan)을 실행한다. 테이블이 const가 표시되지 않은 첫 번쨰 테이블이고, 다른 모든 경우에 있어서 매우 좋지 않은 경우라면, 이것은 그리 좋읜 경우가 아니다.
+      - 테이블을 처음부터 끝까지 읽는 테이블 풀 스캔 방식
 
         
 
-      - 일반적인 경우에는, 이전 테이블에서 가져온 상수 값 또는 컬럼 값을 사용해서 테이블 열을 추출하는 인덱스를 추가하면 ALL을 피할 수 있다.
+      - 활용할 수 있는 인덱스가 없거나, 인덱스를 활용하는게 오히려 비효율적이라고 옵티마이저가 판단했을 때 선택
 
         
 
+      - 인덱스를 새로 추가하거나 기존 인덱스를 변경하여 인덱스를 활용하는 방식으로 튜닝 가능하나, 전체 테이블의 10 ~ 20% 이상 분량의 데이터를 조회하는 경우에는 ALL 유형이 성능 상 유리할 수 있다.
+      
         
 
   - possible_keys
 
-    - 이 테이블에서 열을 찾기 위해 MySQL 이 선택한 인덱스를 가리킨다.
+    - 이 테이블에서 열을 찾기 위해 MySQL 이 선택가능한 인덱스를 표시한다.
 
       
 
-    - 이 테이블은 EXPLAIN 결과에서 나타나는 테이블 순서와는 전적으로 별개의 순서가 된다.
+    - 사용할 수 있는 후보군의 기본 키와 인덱스 목록만 보여주므로 SQL 튜닝의 효용성은 없다.
 
-      
-
-    - possible_key 에 있는 키 중에 어떤 것들은 테이블 순서를 만드는 과정에서 사용되지 않을 수도 있음을 의미한다.
-
-       
-
-    - 만일 이 컬럼 값이 NULL이라면, 연관된 인덱스가 존재하지 않게 된다. 이런 경우, WHERE 구문을 검사해서, 이 구문이 인덱스 하기에 적당한 컬럼을 참조하고 있는지 여부를 알아 봄으로써 쿼리 속도를 개선 시킬 수가  있게 된다.
-
-      - 그런 경우, 적절한 인덱스를 하나 생성한 후에, EXPLAIN 을 다시 사용해서 쿼리를 검사한다.
-
-        
+    
 
     - 테이블이 어떤 인덱스를 가지고 있는지 보기 위해서는 SHOW INDEX FROM tbl_name 을 사용한다.
 
@@ -277,7 +227,7 @@ EXPLAIN [EXTENDED] SELECT select_options
 
   - key
 
-    - key 컬럼은 MySQL 이 실제로 사용할 예정인 키(인덱스) 를 가리킨다.
+    - key 컬럼은 MySQL 이 실제로 사용한 키(인덱스) 를 가리킨다.
 
       
 
@@ -289,13 +239,13 @@ EXPLAIN [EXTENDED] SELECT select_options
 
       
 
-    - MyISAM 및 BDB 테이블의 경우에는, ANALYZE TABLE 를 구동시키면 옵티마이저가 보다 좋은 인덱스를 선택하도록 도움을 줄 수 가 있다.
+    - 비효율적인 인덱스를 사용했거나 인덱스 자체를 사용하지 않았다면 SQL 튜닝의 대상이 된다.
 
       
 
   - key_len
 
-    - MySQL이 사용하기로 결정한 키의 길이를 나타내는 컬럼으로, key 컬럼이 NULL 이라면 이 값도 NULL 이 된다.
+    - MySQL이 사용하기로 결정한 키의 길이(bytes)를 나타내는 컬럼으로, key 컬럼이 NULL 이라면 이 값도 NULL 이 된다.
 
       
 
@@ -311,190 +261,166 @@ EXPLAIN [EXTENDED] SELECT select_options
 
   - rows
 
-    - MySQL 이 쿼리를 실행하기 위해 조사해야 하는 열의 숫자를 가리킨다.
+    - SQL 문을 수행하고자 접근하는 데이터의 모든 행(row) 수를 나타내는 예측 항목
+
+      
+
+    - 디스크에서 데이터 파일을 읽고 메모리에서 처리해야 할 행 수를 예상하는 값
+
+      
+
+    - MySQL이 통계 정보를 참고하여 산출하는 값이므로 수치가 정확하지 않다. 최종 출력될 행 수가 아니라는 점에 유의
+
+      
+
+    - SQL 문의 최종 결과 건수와 비교해 rows 수가 크게 차이 날 때는 불필요하게 MySQL 엔진까지 데이터를 많이 가져왔다는 뜻이므로 SQL 튜닝의 대상이 된다.
+
+      
+
+  - filtered
+
+    - SQL 문을 통해 DB 엔진으로 가져온 데이터 대상으로 필터 조건에 따라 어느 정도의 비율로 데이터를 제거했는지 의미하는 항목
+
+      
+
+    - DB 엔진으로부터 100건의 데이터를 가져왔다면, WHERE 절의 조건으로 10건으로 필터링 되었을 경우, 10/100 = 10% 가 출력이 된다.(단위가 %)
+
+      
+
+    - 이것도 정확한 데이터는 아님에 유의하자.
 
     
 
   - Extra
 
-    - 이 컬럼은 MySQL 이 쿼리를 어떻게 해석하는지에 관한 추가적인 정보를 제공한다. 가질 수 있는 값은 다음과 같다.
+    - SQL 문을 어떻게 수행할 것인지에 관한 추가 정보를 보여주는 항목
+
+      
+
+    - 세미 콜론(;)으로 구분하여 여러 가지 정보를 나열할 수 있다.
+
+      
 
       - Distinct
 
-        - 명확한 값을 찾게 되며, 매칭되는 열을 찾게되면 더 이상의 열에 대해서는 검색을 중단한다.
-
-          
-
-      - Not exists
-
-        - LEFT JOIN 최적화를 실행했으며, 이 최적화와 매치되는 열을 찾은 후에는 더 이상 이 테이블에서 이전 열 조합 검색을 하지 않게 된다.
-
-        ```sql
-        SELECT * FROM t1 LEFT JOIN t2 ON t1.id = t2.id
-         WHERE t2.id IS NULL;
-        ```
-
-        > t2.id를 NOT NULL 로 정의했다면, t1을 스캔하고 t1.id 값을 사용해서 t2에 있는 열을 검색한다.
-        >
-        > t2에서 매칭되는 열을 발견하면, t2.id 가 결코 NULL 이 아님을 알게되어, 동일한 id 값을 가지고 있는 t2에서는 더 이상 열을 스캔하지 않게 된다.
-
-        
-
-      - range checked for each record (index map: N)
-
-        - 사용하기에 좋은 인덱스를 찾지 못했으나, 이전 테이블에서 컬럼 값을 찾고 난 후에는 사용할 수도 있을 법한 인덱스는 알아냈다.
-
-          
-
-        - 이전 테이블에 있는 각 열 조합에 대해서는, 그 조합이 열을 추출하기 위해 range 또는 index_merge 접근 방식을 사용할 수 있는지를 검사한다.
-
-          
-
-        - 이 방법은 그리 빠른 방법은 아니지만, 인덱스를 전혀 사용하지 않는 것보다는 빠르게 진행한다.
-
-          
-
-      - Using filesort
-
-        - 저장된 순서에 따라서 열을 추출하는 방법을 찾기 위해 기타 과정을 진행한다.
-
-          
-
-        - 정렬은 조인 타입과 정렬 키 및 WHERE 구문과 매치가 되는 모든 열에 대한 열 포인터를 사용해서 모든 열에 걸쳐 진행 된다. 그 키는 저장이 되고 열을 저장 순서에 따라서 추츨된다.
-
-          
-
-      - Using index
-
-        - 인덱스 트리에 있는 정보만을 가지고 테이블에서 컬럼 정보를 추출한다. 쿼리가 딘일 인덱스의 일부 컬럼만을 사요하는 경우에, 이러한 전략을 사용할 수 있다.
-
-          
-
-        - 테이블에는 접근하지 않고 인덱스에서만 접근해서 쿼리를 해결하는 것을 의미한다. **커버링 인덱스로 처리됨 index only scan이라고도 부른다**
-
-          
-
-      - Using temporary
-
-        - 쿼리를 해석하기 위해, 결과를 저장할 임시 테이블을 하나 생성해야 한다. 만일 쿼리가 컬럼을 서로 다르게 목록화 하는 GROUP BY 및 ORDER BY 구문을 가지고 있는 경우에 이런 것이 일어난다.
+        - 중복이 제거되어 유일한 값을 찾을 때 출력되는 정보, distinct 키워드나 union 구문이 포함된 경우 출력
 
           
 
       - Using where
 
-        - WHERE 구문은 다음 테이블에 대한 열 매치 또는 클라이언트에 보내지는 열을 제한하기 위해 사용된다.
-
+        - WHERE 절의 필터 조건을 사용해 MySQL 엔진으로 가져온 데이터를 추출할 것이라는 의미
+      
+        
+      
+    - Using temporary
+      
+        - 쿼리를 해석하기 위해, 결과를 저장할 임시 테이블을 하나 생성하겠다는 의미
+      
+        
+      
+      - 임시 테이블을 메모리에 생성하거나, 메모리 영역을 초과하여 디스크에 임시 테이블을 생성하면 성능 저하의 원인이 되므로 튜닝의 대상
+      
+      
+      
+    - Using filesort
+      
+      - 정렬이 필요한 데이터를 메모리에 올리고 정렬 작업을 수행한다는 의미
+      
+        
+      
+      - 인덱스를 사용하지 못해 정렬을 위해 메모리 영역에 데이터를 올리게 되는데, 추가적인 정렬 작업을 말한다.
+      
+        
+      
+      - SQL 튜닝의 대상이 된다.
+      
+        
+      
+    - Using join buffer
+      
+      - 조인을 수행하기 위해 중간 데이터 결과를 저장하는 조인 버퍼를 사용한다는 의미
+      
+        
+      
+      - 드라이빙 테이블의 데이터에 먼저 접근할 결과를 조인 버퍼에 담고 난 뒤, 조인 버퍼와 드리븐 테이블 간에 서로 일치하는 조인 키 값을 찾는 과정을 수행한다.
+      
+        
+      
+    - Using union / Using intersect / Using sort_union
+      
+      - 인덱스가 병합되어 실행되는 type 항목의 index_merge 유형에서 인덱스를 어떻게 병합했는지에 관한 상제 정보 
+      
+      
+      
+    - Using index
+      
+      - 물리적인 데이터 파일을 읽지 않고, 인덱스만을 읽어서 SQL 문의 요청사항을 처리할 수 있는 경우를 의미한다.
+      
+        
+      
+      - **커버링 인덱스로 처리됨 index only scan이라고도 부른다**
+      
+        
           
-
-        - 테이블에서 모든 열을 조사하거나 불러올 의도가 특별히 없다면, Extra 값이 Using Where 가 아니고, 테이블 조인 타입이 ALL 또는 index 일 경우에는 쿼리에 문제가 생길 수도 있다.
-
+      - 인덱스로 구성된 열만 SQL 문에서 사용할 경우 이 방식을 활용한다.
+      
+      
+      
+    - Using index condition
+      
+      - Mysql 엔진에서 인덱스로 생성된 열의 필터 조건에 따라 요청된 데이터만 필터링하는 Using where 방식과 달리, 필터 조건을 스토리지 엔진으로 전달하여 필터링 작업에 대한 Mysql 엔진의 부하를 줄이는 방식
+      
+        
+      
+      - 스토리지 엔진의 데이터 결과를 Mysql 엔진으로 전송하는 데이터양을 줄여 성능 효율을 높일 수 있는 옵티마이저의 최적화 방식
+      
+        
+      
+      - 인덱스 컨디션 푸시다운(Index Condition PushDown) 옵션으로 5.6 버전 이상에서는 자동으로 제공한다고 한다.
+      
+        - 이하 일 경우, 옵션을 켜주도록 하자.
+      
           
-
-        - 가능한 한 빠른 쿼리를 만들고 싶다면, Extra Using filesort 및 Using temporary 값을 조사하도록 한다.
-
+      
+    - Using Index condition(BKA)
+      
+      - 데이터를 검색하기 위해 배치 키 액세스(BKA)를 사용하는 방식
+      
         
-
-      - Using sort_union(...), Using union(...), Using intersect(...)
-
-        - 인덱스 스캔이 어떻게 index_merge 조인 타입과 병합(merge)이 되는지를 나타낸다.
-
-          
-
-        - 자세한 것은 [인덱스 병합 최적화](http://www.mysqlkorea.com/sub.html?mcode=manual&scode=01&m_no=21451&cat1=7&cat2=217&cat3=232&lang=k)를 참조하자.
-
-        
-
-      - Using index for group-by
-
-        - 테이블 접근에 대한 Using index 방식과 유사한 Using index for group-by 방식은 MySQL 이 실제 테이블을 추가적으로 검색을 하지 않고서도, GROUP BY 또는 DISTINCT 쿼리의 모든 컬럼을 추출하기 위해 사용될 수 있는 인덱스를 찾음을 가리킨다.
-
-          
-
-        - 그 인덱스가 각 그룹에 대해 가장 효과적인 방식으로 사용되기 때문에, 적은 수의 인덱스 엔트리만이 읽혀지게 된다.
-
-          
-
-      - Using where with pushed condition
-
-        - [NDB Cluster](https://www.google.com/search?rlz=1C5CHFA_enKR963KR963&hl=ko&sxsrf=ALeKk03xTtl2N_4_t4Mv3E84ZKml4z-yRw:1629699424116&q=MySQL+NDB+Cluster&sa=X&ved=2ahUKEwjl-Y66v8byAhXb4mEKHfI_BfgQ1QIwEXoECBYQAQ&biw=1920&bih=814) 테이블에만 적용된다.
-
-          
-
-        - MySQL 클러스터가 인덱스가 되지 않은 컬럼 (non-indexed column) 과 상수(constant) 간의 직접 비교(direct comparison (=))의 효율성을 개선하기 위해 조건문을 푸시 다운(condition pushdown) 하는 중이라는 의미를 갖는다.
-
-          
-
-        - 이런 경우, 조건문은 동시에 값이 검사되는 클러스터의 모든 데이터 노드로 "푸시 다운" 이 된다. 매치되지 않는 열을 네트워크 전체에 보낼 필요성을 없애 주며, 조건문 푸시 다운을 하지 않는 경우에 비해서 5~10배의 속도 향상을 얻을 수 있다.
-
-        ```sql
-        -- 1. 아래와 같은 클러스터 테이블을 가지고 있다고 가정하자.
-        CREATE TABLE t1 (
-        	a INT, 
-          b INT,
-          KEY(a)
-        ) ENGINE=NDBCLUSTER:
-        
-        -- 2. 조건문 푸시 다운은 아래와 같은 쿼리에 함께 사용될 수 있다.
-        SELECT a,b FROM t1 WHERE b = 10;
-        
-        -- 3. EXPLAIN SELECT 로 결과를 보면 다음과 같다.
-        /*
-                   id: 1
-          select_type: SIMPLE
-                table: t1
-                 type: ALL
-        possible_keys: NULL
-                  key: NULL
-              key_len: NULL
-                  ref: NULL
-                 rows: 10
-                Extra: Using where with pushed condition
-        */
-        
-        -- 4. 다음의 경우에는 조건문 푸시 다운을 적용할 수 없다.
-        SELECT a,b FROM t1 WHERE a = 10; -- 인덱스가 컬럼 a에 존재
-        
-        SELECT a,b FROM t1 WHERE b + 1 = 10; -- 인덱스가 되지 않은 컬럼 b를 포함하는 비교문이 간접적이기 때문  ( b + 1이 간접적, b = 9 로 바꾸면 푸시 다운 사용 가능)
-        
-        -- > 또는 < 연산자를 사용해서 인덱스된 컬럼을 상수와 비교를 하는 경우에는 조건문 푸시 다운을 사용할 수가 있다.
-        EXPLAIN SELECT a,b FROM t1 WHERE a<2/G
-        
-        /*
-                   id: 1
-          select_type: SIMPLE
-                table: t1
-                 type: range
-        possible_keys: a
-                  key: a
-              key_len: 5
-                  ref: NULL
-                 rows: 2
-                Extra: Using where with pushed condition
-        */
-        
-        -- 5. 조건문 푸시 다운에 관해서는 다음 사항을 기억해야 한다. 
-        
-        /*
-        	- 조건문 푸시 다운은 MySQL 클러스터에만 관련이 있고, 다른 스토리지 엔진을 사용하고 있는 테이블에 대해서 쿼리를 실행할 경우 발생하지 않는다.
-        	
-        	- 조건문 푸시 다운 기능은 디폴트로 사용되지 않는다. 기능을 활성화 시키기 위해서는 mysqlid 를 --engine-condition-pushdown 옵션과 함꼐 시작하거나, 또는 다음 명령문을 실행한다
-        	SET engine_condition_pushdown=On;
-        */
-        ```
-
-        
+      
+    - Using index for group-by
+      
+      - 인덱스로 정렬 작업을 수행하는 인덱스 루스 스캔일 떄 출력되는 부가 정보
+      
 
       
 
-- 그럼 위와 같은 Explain 키워드로 나온 값을 어떻게 적용하면 좋을까? 인터넷이 찾아보니 다음과 같은 핵심 방법이 있다고 한다.
+      - Not Exists
+      - 하나의 일치하는 행을 찾으며 추가로 행을 더 검색하지 않아도 될 때 출력되는 유형
 
 
 
-**1. 느린 쿼리 앞에 explain을 추가해서 그 쿼리를 "측정"해본다.** 
+- 실행 계획을 수행하여 출력된 정보를 보았을 때, SQL 튜닝 대상인 실행 꼐획과 튜닝이 필요하지 않은 실행 계획을 구분하기는 너무 어려운 작업이다.
 
-**2. 결과 중에 Type 컬럼값이 All이거나 Index이면 해당 쿼리에 적합한 인덱스가 없다는 뜻이다.**
+  
 
-**3. 쿼리의 where 조건문에 있는 컬럼의 조합 혹은 하나의 컬럼으로 인덱스를 생성한다.**
+- 어느 쪽이 좋다 나쁘다고 말하기는 어렵지만, 다음과 같은 기준을 통해 참조 가능하다. (그렇다고 나쁜 쪽이 꼭 나쁜것은 아니다.. 중요한 것은 속도이다.)
 
-**4. sub쿼리가 있는 경우 각각 분리해서 explain을 실행해본다.**  
+  - select_type
+    - 좋음
+      - SIMPLE, PRIMARY, DERIVED
+    - 나쁨
+      - DEPEDENT *
+      - UNCACHEABLE *
+  - type
+    - 좋음
+      - system, const, eq_ref
+    - 나쁨
+      - index, all
+  - extra
+    - 좋음
+      - Using index
+    - 나쁨
+      - Using filesort, Using temporary
 
