@@ -363,3 +363,4 @@ UPDATE member SET m_area = '경기' WHERE m_id = 12;
 >
 > - https://myinfrabox.tistory.com/20
 
+ 
