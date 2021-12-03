@@ -593,7 +593,7 @@ UPDATE member SET m_area = '경기' WHERE m_id = 12;
 
 ### 버퍼 풀 플러시(Buffer Pool Flush)
 
-- 플러시란 변경 사항을 데이터베이스에 기록하기 위해, 메모리 영역이나 이미 디스크 스토리지 영역에 버퍼해 놓는데(버퍼풀, 리두 로그, 언두 로그) 이를 비우는 작업을 말한다.
+- [플러시](https://dev.mysql.com/doc/refman/8.0/en/flush.html) 란 변경 사항을 데이터베이스에 기록하기 위해, 메모리 영역이나 이미 디스크 스토리지 영역에 버퍼해 놓는데(버퍼풀, 리두 로그, 언두 로그) 이를 비우는 작업을 말한다.
 
   - 메모리 공간이 꽉차 자유 공간이 필요하다거나, 트랜잭션으로 인한 변경이 끝나 Commit이 수행될때를 에로 들 수 있다.(예시)
 
@@ -640,3 +640,129 @@ UPDATE member SET m_area = '경기' WHERE m_id = 12;
     
 
   - 8.0버전으로 업그레이드되면서 대부분의 서비스에서는 더티 페이지를 디스크에 동기화하는 부분(더티 페이지 플러시)에서 예전과 같은 디스크 쓰기 폭증 현상을 발생하지 않았다.
+
+
+
+<br>
+
+***
+
+### 버퍼 풀 상태 백업 및 복구
+
+- InnoDB 서버의 버퍼 풀은 쿼리의 성능에 매우 밀접하게 연관되어 있다. 
+
+  - 쿼리 요청이 매우 빈번한 서버를 셧다운했다가 다시 시작하고 서비스를 시작하면 쿼리 처리 성능이 평상시보다 1/10도 안 되는 경우가 대부분일 것이다.
+
+  
+
+- 버퍼 풀에 쿼리들이 사용할 데이터가 이미 준비되어 있으므로 디스크에서 데이터를 읽지 않아도 쿼리가 처리될 수 있기 때문이다.
+
+  
+
+- 이렇게 디스크의 데이터 버퍼 풀에 적재되어 있는 상태를 워밍업(Warming Up)이라고 표현하는데, 버퍼 풀이 잘 워밍업된 상태에서는 그렇지 않은 경우보다 몇십 배의 쿼리 처리 속도를 보이는 것이 일반적이다.
+
+  - 5.5 버전에서는 점검을 위해 서버를 셧다운했다가 다시 시작하는 경우, 서비스를 오픈하기 전에 강제 워밍업을 위해 주요 테이블과 인덱스에 대해 풀 스캔을 한 번씩 실행하고 서비스를 오픈했었다.
+
+    
+
+  - 5.6 버전부터는 버퍼 풀 덤프 및 적재 기능이 도입되었다. 서버 점검이나 기타 작업을 위해 서버를 재시작해야 하는 경우 서버를 셧다운하기 전에 다음과 같이 innodb_buffer_pool_dump_now 시스템 변수를 이용해 InnoDB 버퍼 풀의 상태를 백업할 수 있다.
+
+    
+
+  - 그리고, 서버를 다시 시작하면 innodb_buffer_pool_load_now 시스템 변수를 이용해 백업된 버퍼 풀의 상태를 다시 복구할 수 있다.
+
+  ```mysql
+  -- MySQL 서버 셧다운 전에 버퍼 풀의 상태 백업
+  > SET GLOBAL innodb_buffer_pool_dump_now = ON;
+  
+  -- MySQL 서버 재시작 후, 백업된 버퍼 풀의 상태 복구
+  > SET GLOBAL innodb_buffer_pool_load_now = ON;
+  ```
+
+  
+
+- 버퍼 풀의 백업은 데이터 디렉터리에 id_buffer_pool 이라는 이름의 파일로 생성되는데, 실제 이 파일의 크기를 보면 아무리 InnoDB 버퍼 풀이 크다 하더라도 몇십 MB 이하인 것을 알 수 있다.
+
+  - InnoDB 스토리지 엔진이 버퍼 풀의 LRU 리스트에서 적재된 데이터 페이지의 메타 정보만 가져와서 저장하기 때문이다.
+
+    
+
+  - 그래서 버퍼 풀의 백업은 매우 빨리 완료된다. 하지만 백업된 버퍼 풀의 내용을 다시 버퍼 풀로 복구하는 과정은 InnoDB 버퍼 풀의 크기에 따라 상당한 시간이 걸릴 수도 있다. 백업된 내용에서 각 테이블의 데이터 페이지를 다시 디스크에서 읽어와야 하기 떄문이다.
+
+    
+
+  - 그래서 InnoDB 스토리지 엔진은 버퍼 풀을 다시 복구하는 과정이 어느 정도 진행되었는지 확인할 수 있게 상태 값을 제공한다.
+
+  ```MYSQL
+  > SHOW STATUS LIKE 'Innodb_buffer_pool_dump_status'\G
+  ```
+
+  
+
+  - 버퍼 풀 적재 작업에 너무 시간이 오래 걸려서 중간에 멈추고자 한다면 innodb_buffer_pool_load_abort 시스템 변수를 이용하면 된다.
+
+    - 복구하는 작업은 상당히 많은 디스크 읽기를 필요로 하기 때문에 버퍼 풀 복구가 실행 중인 상태에서 서비스를 재개하는 것은 좋지 않은 선택일 수도 있다. 그래서 버퍼 풀 복구 도중에 급히 서비스를 재시작해야 한다면 다음과 같이 버퍼 풀 복구를 멈출것을 권장한다.
+
+    ```mysql
+    > SET GLOBAL innodb_buffer_pool_load_abort=ON;
+    ```
+
+  
+
+- 수동으로 InnoDB 버퍼 풀의 백업과 복구를 살펴보았는데, 사실 이 작업을 수동으로 하기는 쉽지 않다. 다른 작업을 위해 MySQL 서버를 재시작하는 경우 해야 할 작업에 집중한 나머지 버퍼 풀의 백업과 복구 과정을 잊어버리기 십상이다.
+
+  
+
+- InnoDB 스토리지 엔진은 MySQL 서버가 셧다운 되기 전에 버퍼 풀의 백업을 실행하고, MySQL 서버가 시작되면 자동으로 백업된 버퍼 풀의 상태를 복구할 수 있는 기능을 제공한다.
+
+  - 백업과 복구를 자동화하려면 innodb_buffer_pool_dump_at_shudown 과 innodb_buffer_pool_ad_at_startup 설정을 MySQL 서버의 설정 파일에 넣어두면 된다.
+
+
+
+<br>
+
+***
+
+### 버퍼 풀의 적재 내용 확인
+
+- MySQL 5.6 버전 부터 MySQL 서버의 information_schema 데이터베이스의 innodb_buffer_page 테이블을 이용해 InnoDB 버퍼 풀의 메모리에 어떤 테이블의 페이지들이 적재되어 있는지 확인할 수 있었다.
+
+  - InnoDB 버퍼 풀이 큰 경우에는 이 테이블 조회가 상당히 큰 부하를 일으키면서 서비스 쿼리가 많이 느려지는 문제가 있었다. 그래서 실제 서비스용으로 사용되는 MySQL 서버에서는 버퍼 풀의 상태를 확인하는 것이 거의 불가능했다.
+
+    
+
+- MySQL 8.0 버전에서는 이러한 문제점을 해결하기 위해 information_schema 데이터베이스에 innodb_cached_indexes 테이블이 새로 추가되었다.
+
+  
+
+- 이 테이블을 이용하면 테이블의 인덱스별로 데이터 페이지가 얼마나 InnoDB 버퍼 풀에 적재되어 있는지 확인할 수 있다.
+
+```mysql
+> SELECT
+  it.name table_name,
+  ii.name index_name,
+  ici.n_cached_pages n_cached_pages
+  FROM information_schema.innodb_tables it
+  INNER JOIN information_schema.innodb_indexes ii ON ii.table_id = it.table_id
+  INNER JOIN information_schema.innodb_cached_indexes ici ON ici.index_id = ii.index_id
+  WHERE it.name = CONCAT('employyes', '/', 'employees');
+```
+
+
+
+- 조금만 응용하면 테이블 전체(인덱스 포함) 페이지 중에서 대략 어느 정도 비율이 InnoDB 버퍼 풀에 적재되어 있는지  확인할 수 있다.
+  - 아직 개별 인덱스별로 전체 페이지 개수가 몇 개인지는 사용자에게 알려주지 않기 떄문에 테이블의 인덱스별로 페이지가 InnoDB  버퍼 풀에 적재된 비율은 확인할 수가 없다.
+
+```mysql
+> SELECT
+	(SELECT SUM(ici.n_cached_pages) n_cached_pages
+     FROM information_schema.innodb_tables it
+     INNER JOIN information_schema.innodb_indexes ii ON ii.table_id = it.table_id
+     INNER JOIN information_schema.innodb_cached_indexes ici ON ici.index_id = ii.index_id
+     WHERE it.name = CONCAT(t.table_schema, '/', t.table_name)) as total_cached_pages,
+    ((t.data_length + t.index_length - t.data_free)/@@innodb_page_size) as total_pages
+    FROM information_schema.tables t
+    WHERE t.table_schema='employees'
+      AND t.table_name='employees';
+    
+```
