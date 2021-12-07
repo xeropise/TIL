@@ -125,4 +125,87 @@
 
     
 
-  
+- __언두 테이블스페이스 관리__
+
+  - 언두 로그가 저장되는 공간을 언두 테이블스페이스(Undo Tablespace)라고 한다.
+
+    
+
+  - 언두 테이블스페이스는 버전별로 많은 변화가 있었다.
+
+    - 5.6 이전 버전에서는 언두 로그가 모두 시스템 테이블스페이스(ibdata.ibd)에 저장되었다. 하지만 테이블스페이스의 언두 로그는 MySQL 서버가 초기화될 때 생성되기 때문에 확장의 한계가 있었다.
+
+      
+
+    - 5.6 버전에서는 [innodb_undo_tablespaces 시스템 변수](https://dev.mysql.com/doc/refman/5.7/en/innodb-parameters.html#sysvar_innodb_undo_tablespaces) 가 도입되었고, 2보다 큰 값으로 설정하면 더이상 언두 로그를 시스템 테이블스페이스에 저장하지 않고, 별도의 언두 로그 파일을 사용했다.
+
+      - 하지만 0으로 설정하면 여전히 이전 버전과 동일하게 언두 로그가 시스템 테이블스페이스에 저장되었다.
+
+        
+
+    - 8.0으로 업그레이드되면 (8.0.14~) innodb_undo_tablespaces 시스템 변수는 더 이상 효력이 없어졌으며(Deprecated), 언두 로그는 항상 시스템 테이블스페이스의 외부의 별도 로그 파일에 기록되도록 개선되었다.
+
+
+
+![KakaoTalk_Photo_2021-12-07-09-07-17](https://user-images.githubusercontent.com/50399804/148307533-3fa18daa-409e-4c95-8d7a-4fe059adf397.jpeg)
+
+> 하나의 언두 테이블스페이스는 1개 이상 128개 이하의 롤백 세그먼트를 가지며, 롤백 세그먼트는 1개 이상의 언두 슬롯(Undo Slot)을 가진다.
+
+
+
+- 하나의 롤백 세그먼트는 InnoDB의 페이지 크기를 16바이트로 나누 값의 개수만큼의 언두 슬롯을 가진다.
+
+  - 페이지 크기가 16KB라면 하나의 롤백 세그먼트는 1024개의 언두 슬롯을 갖게 된다.
+
+    
+
+  - 하나의 트랜잭션이 필요로 하는 언두 슬롯의 개수는 트랜잭션이 실행하는 DML 문장의 특성에 따라 최대 4개까지 언두 슬롯을 사용하게 된다.
+
+    
+
+  - 일반적으로는 트랜잭션이 임시 테이블을 사용하지 않으므로, 하나의 트랜잭션은 대략 2개 정도의 언두 슬롯을 필요로 한다고 가정하면 된다ㅏ.
+
+    - 그래서 최대 동시 처리 가능한 트랜잭션의 개수는 다음 수식으로 예측해 볼 수 있다.
+
+    ```
+    최대 동시 트랜잭션 수 = (innoDB 페이지 크기) / 16 * (롤백 세그먼트 개수) * (언두 테이블스페이스 개수)
+    ```
+
+    - 기본 설정 (innodb_undo_tablespaces=2, innodb_rollback_segments=128) 을 사용한다고 가정하면 대략 2097152개 정도의 트랜잭션이 동시에 처리 가능해진다.
+
+      - 물론 일반적인 서비스에서 이 정도까지 동시 트랜잭션이 필요하진 않겠지만 기본값으로 해서 크게 문제될 건 없으므로 가능하면 기본값을 유지하자.
+
+        
+
+  - __언두 로그 공간이 남는 것은 크게 문제되지 않지만 언두 로그 슬롯이 부족한 경우에는 트랜잭션을 시작할 수 없는 심각한 문제가 발생한다.__
+
+    
+
+  - 언두 로그 관련 시스템 변수를 변경해야 한다면, 적절히 필요한 동시 트랜잭션 개수에 맞게 언두 테이블스페이스와 롤백 세그먼트의 개수를 설정해야 한다.
+
+    - 8.0 이전까지는 한 번 생성된 언두 로그는 변경이 허용되지 않고, 정적으로 사용되었다.
+
+      
+
+    - 8.0 버전부터는 CREATE UNDO TABELSPACE 나 DROP TABLESPACE 같은 명령으로 새로운 언두 테이블 스페이스를 동적으로 추가하고 삭제할 수 있게 개선됐다.
+
+    ```mysql
+    > SELECT TABLESPACE_NAME, FILE_NAME
+      FROM INFORMATION_SCHEMA.FILES
+      WHERE FILE_TYPE LIKE 'UNDO LOG';
+      
+    > CREATE UNDO TABLESPACE extra_undo_003 ADD DATAFILE '/data/undo_dir/undo003';
+    
+    -- 언두 테이블스페이스 비활성화
+    > ALTER UNDO TABLESPACE extra_undo_003 SET INACTIVE;
+    
+    -- 비활성화된 테이블 스페이스 삭제
+    > DROP UNDO TABLESPACE extra_undo_003;
+    ```
+
+    
+
+  - 언두 테이블스페이스의 불필요한 공간을 잘라내는(Truncate) 방법은 자동과 수동 2가지 방법이 있는데 모두 8.0 버전에서 지원된다. 자세한 것은 책을 참조하자.
+
+    - [innodb_undo_log_truncate 시스템 변수](https://dev.mysql.com/doc/refman/5.7/en/innodb-parameters.html#sysvar_innodb_undo_log_truncate)
+
