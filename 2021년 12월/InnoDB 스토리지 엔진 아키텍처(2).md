@@ -209,3 +209,75 @@
 
     - [innodb_undo_log_truncate 시스템 변수](https://dev.mysql.com/doc/refman/5.7/en/innodb-parameters.html#sysvar_innodb_undo_log_truncate)
 
+
+
+<br>
+
+***
+
+### [체인지 버퍼](https://dev.mysql.com/doc/refman/5.7/en/innodb-change-buffer.html)
+
+- __RDBMS 에서 레코드가 INSERT 되거나 UPDATE 될 때는 데이터 파일을 변경하는 작업뿐 아니라 해당 테이블에 포함된 인덱스를 업데이트하는 작업도 필요하다.__
+
+  - 인덱스를 업데이트하는 작업은 랜덤하게 디스크를 읽는 작업이 필요하므로 테이블에 인덱스가 많다면 이 작업은 상당히 많은 자원을 소모하게 된다.
+
+    
+
+  - InnoDB는 변경해야 할 인덱스 페이지가 버퍼 풀에 있으면 바로 업데이트를 수행하지만, 그렇지 않고 디스크로부터 읽어와서 업데이트해야 한다면 이를 즉시 실행하지 않고, 임시 공간에 저장해 두고 바로 사용자에게 결과를 반환하는 형태로 성능을 향상시키게 된다.
+
+    - __이때 사용하는 임시 메모리 공간을 체인지 버퍼(Change Buffer)라고 한다.__
+
+    
+
+- 사용자에게 결과를 전달하기 전에 반드시 중복 여부를 체크해야 하는 유니크 인덱스는 체인지 버퍼를 사용할 수 없다.
+
+  
+
+- 체인지 버퍼에 의해 임시로 저장된 인덱스 레코드 조각은 이후 백그라운드 스레드에 의해 병합되는데, 이 스레드를 체인지 버퍼 머지 스레드(Merge thread) 라고 한다.
+
+  - 5.5 버전 이전에서는 INSERT 만 가능했으나 5.5 버전 이후 부터 개선되면서 8.0 에서는 INSERT, DELETE, UPDATE 로 인해 키를 추가하거나 삭제하는 작업에 대해서도 버퍼링이 될 수 있게 개선되었다.
+
+    
+
+  - [innodb_change_buffering](https://dev.mysql.com/doc/refman/5.7/en/innodb-parameters.html#sysvar_innodb_change_buffering) 이라는 시스템 변수가 새로 도입되어 작업의 종류별로 체인지 버퍼를 활성화할 수 있으며, 체인지 버퍼가 비효율적일 때는 체인지 버퍼를 사용하지 않게 설정할 수 있게 개선되었다.
+
+    - all: 모든 인덱스 관련 작업(inserts + deletes + purges)을 버퍼링
+
+    - none: 버퍼링 안함
+
+    - inserts: 인덱스에 새로운 아이템을 추가하는 작업만 버퍼링
+
+    - deletes: 인덱스에서  기존 아이템을 삭제하는 작업(삭제되었다는 마킹 작업)만 버퍼링
+
+    - changes: 인덱스에 추가하고 삭제하는 작업만(inserts + deletes) 버퍼링
+
+    - purges: 인덱스 아이템을 영구적으로 삭제하는 작업만 버퍼링(백그라운드 작업)
+
+      
+
+- 체인지 버퍼는 기본적으로 버퍼 풀로 설정된 메모리 공간의 25%까지 사용할 수 있게 설정되어 있으며, 필요하다면 버퍼 풀의 50% 까지 사용하게 설정할 수 있다.
+
+  - 체인지 버퍼가 너무 많은 버퍼 풀 공간을 사용하지 못하도록 한다거나 INSERT나 UPDATE 등이 너무 빈번하게 실행되어 체인지 버퍼가 더 많은 버퍼 풀을 사용할 수 있게 하고자 한다면 [innodb_change_buffer_max_size 시스템 변수](https://dev.mysql.com/doc/refman/5.7/en/innodb-parameters.html#sysvar_innodb_change_buffer_max_size) 에 비율을 설정하면 된다.
+
+  
+
+- 체인지 버퍼가 버퍼 풀의 메모리를 얼마나 사용 중인지, 얼마나 많은 변경 사항을 버퍼링하고 있는지는 다음과 같이 확인할 수 있다.
+
+```mysql
+-- 체인지 버퍼가 사용 중인 메모리 공간의 크기
+> SELECT EVENT_NAME, CURRENT_NUMBER_OF_BYTES_USED
+  FROM performance_schema.memory_summary_global_by_event_name
+  WHERE EVENT_NAME='memory/innodb/ibuf0ibuf';
+  
+  
+-- 체인지 버퍼 관련 오퍼레이션 처리 횟수
+> SHOW ENGINE INNODB STATUS
+
+....
+-------------------------------------
+INSERT BUFFER AND ADAPTIVE HASH INDEX
+-------------------------------------
+-- 관련 내용
+...
+```
+
