@@ -156,3 +156,6 @@
 
       - 위 값들은 읽은 레코드 건수를 의미하는데, 실제 인덱스만 읽었는지 인덱스를 통해 테이블의 레코드를 읽었는지는 구분하지는 않는다.
 
+        
+
+      - 다른 지표에 대한 설명과 Handler에 대한 설명은 [여기](https://m.blog.naver.com/PostView.naver?isHttpsRedirect=true&blogId=jevida&logNo=221252404199) 를 참조하자.
