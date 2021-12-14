@@ -134,8 +134,8 @@
 	FROM employees
 	WHERE birth_date >= '1965-02-01';
 	
-	id   table  		type  	key  									Extra
-	1    employees  range		ix_gender_birthdate		Using where; Using Index for skip scan
+ id   table  	type  	        key  				Extra
+ 1    employees  range		ix_gender_birthdate		Using where; Using Index for skip scan
 ```
 
 
