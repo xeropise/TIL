@@ -108,8 +108,8 @@
 	FROM employees
 	WHERE birth_date >= '1965-02-01';
 	
-	id   table  		type  	key  									Extra
-	1    employees  index		ix_gender_birthdate		Using where; Using Index
+ id   table  	 type  		key  			        Extra
+ 1    employees  index		ix_gender_birthdate		Using where; Using Index
 ```
 
 
