@@ -421,6 +421,8 @@ INSERT BUFFER AND ADAPTIVE HASH INDEX
 
 ### [어댑티브 해시 인덱스](https://dev.mysql.com/doc/refman/8.0/en/innodb-adaptive-hash.html)
 
+![다운로드](https://user-images.githubusercontent.com/50399804/148480432-95aed621-34e7-40bf-b3cf-ddd28fb3f397.png)
+
 - 일반적으로 인덱스라고 하면 이는 테이블에 사용자가 생성해둔 B-Tree  인덱스를 의미한다.
 
   - 인덱스가 사용하는 알고리즘이 B-Tree는 아니더라도, 사용자가 직접 테이블에 생성해둔 인덱스가 우리가 일반적으로 알고 있는 인덱스일 것이다.
@@ -428,6 +430,8 @@ INSERT BUFFER AND ADAPTIVE HASH INDEX
     
 
 - __어댑티브 해시 인덱스(Adaptive Hash Index)는 사용자가 수동으로 생성하는 인덱스가 아니라 InnoDB 스토리지 엔진에서 사용자가 자주 요청하는 데이터에 대해 자동으로 생성하는 인덱스__ 를 말한다.
+
+  - 즉 전체 데이터를 대상으로 해시값을 생성하지는 않고, Adaptive Hash Index에 할당되는 메모리는 전체 InnodB_Buffer_Pool_size의 1/64 만큼 초기화된다.
 
   
 

@@ -152,7 +152,7 @@ UPDATE member SET m_area = '경기' WHERE m_id = 12;
 
 ![KakaoTalk_Photo_2021-11-29-10-28-31](https://user-images.githubusercontent.com/50399804/147019968-879f2583-4a50-412b-abe9-d9c902d8ae42.jpeg)
 
-- UPDATE 문장이 실행되면 커밋 실행 여부와 관계없이 InnoDB 버퍼 풀ㄹ은 새로운 값이 '경기'로 업데이트된다.
+- UPDATE 문장이 실행되면 커밋 실행 여부와 관계없이 InnoDB 버퍼 풀은 새로운 값이 '경기'로 업데이트된다.
 
   
 
@@ -595,7 +595,7 @@ UPDATE member SET m_area = '경기' WHERE m_id = 12;
 
 - [플러시](https://dev.mysql.com/doc/refman/8.0/en/flush.html) 란 변경 사항을 데이터베이스에 기록하기 위해, 메모리 영역이나 이미 디스크 스토리지 영역에 버퍼해 놓는데(버퍼풀, 리두 로그, 언두 로그) 이를 비우는 작업을 말한다.
 
-  - 메모리 공간이 꽉차 자유 공간이 필요하다거나, 트랜잭션으로 인한 변경이 끝나 Commit이 수행될때를 에로 들 수 있다.(예시)
+  - 메모리 공간이 꽉차 자유 공간이 필요하다거나, 트랜잭션으로 인한 변경이 끝나 Commit이 수행될때를 예로 들 수 있다.(예시)
 
     
 
