@@ -118,3 +118,79 @@
            
 
          - 세그먼테잉션 폴트로 종료된 경우에는 스택 트레이스의 내용을 최대한 참조해서 MySQL의 버그와 연관이 있는지 조사한 후, MySQL의 버전을 업그레이드하거나 회피책(WorkAround)을 찾는 것이 최적의 방법이다. 
+
+
+
+<br>
+
+***
+
+### 제너럴 쿼리 로그 파일(제너럴 로그 파일, General log)
+
+- 가끔 MySQL 서버에서 실행되는 쿼리로 어떤 것들이 있는지 전체 목록을 뽑아서 검토해 볼 때가 있는데, 이때는 쿼리 로그를 활성화해서 쿼리를 쿼리 로그 파일로 기록하게 한 다음, 그 파일을 검토하면 된다.
+
+  
+
+- 쿼리 로그 파일에는 다음과 같이 시간 단위로 실행되었떤 쿼리의 내용이 모두 기록되는데, 슬로우 쿼리로그와는 조금 다르게 제너럴 쿼리 로그는 실행되기 전에 MySqL이 쿼리 요청을 받으면 바로 기록하기 때문에 쿼리 실행 중에 에러가 발생해도 일단 로그 파일에 기록된다.
+
+  
+
+- 쿼리 로그 파일의 경로는 general_log_file 이라는 이름의 파라미터에 설정되어 있다. 쿼리 로그를 파일이 아닌 테이블에 저장하도록 설정할 수 있으므로, 이 경우에는 파일이 아닌 테이블을 SQL로 조회해서 검토해야 한다.
+
+```mysql
+> show variables like 'general_log_file';
+
+Variable_name     || Value
+general_log_file  || /rdsdbdata/log/general/mysql-general.log
+
+```
+
+
+
+- 쿼리 로그를 파일로 저장할지 테이블로 저장할지는 [log_output 파라미터](https://dev.mysql.com/doc/refman/5.7/en/server-system-variables.html#sysvar_log_output) 로 결정된다. 
+
+  - 제너럴 로그와 관련된 상세한 내용은 MySQL 메뉴얼의 'log_output 설정 파라미터' 와 ['The General Query Log'](https://dev.mysql.com/doc/refman/5.7/en/query-log.html) 절을 참조하자.
+
+    
+
+  - 로그 파일의 경로에 관련된 상세한 내용은 ['Selecting General Query and SlowQuery Log Output Destinations'](https://dev.mysql.com/doc/refman/5.7/en/log-destinations.html) 를 참조하자.
+
+
+
+<br>
+
+***
+
+### 슬로우 쿼리 로그
+
+- MySQL 서버의 쿼리 튜닝은 크게 서비스가 적용되기 전에 전체적으로 튜닝하는 경우와 서비스 운영 중에 MySQL 서버의 전체적인 성능 저하를 검사하거나 정기적인 점검을 위한 튜닝으로 나눌 수 있다.
+
+  - 전자의 경우에는 검토해야 할 대상 쿼리가 전부라서 모두 튜닝하면 되지만, 후자의 경우에는 어떤 쿼리가 문제의 쿼리인지 판단하기가 상당히 어렵다.
+
+    
+
+  - 이런 경우, 서비스에서 사용되는 쿼리 중에서 어떤 쿼리가 문제인지를 판단하는 데 슬로우 쿼리 로그가 상당히 많은 도움이 된다.
+
+    
+
+- 슬로우 쿼리 로그 파일에는 [long_query_time 시스템 변수](https://dev.mysql.com/doc/refman/5.7/en/server-system-variables.html#sysvar_long_query_time) 에 설정한 시간(초단위로 설정하지만, 소수점 값으로 설정하면 마이크로 초 단위로 설정 가능함) 이상의 시간이 소요된 쿼리가 모두 기록된다.
+
+  
+
+- 슬로우 쿼리로그는 MySQL이 쿼리를 실행한 후, 실제 소요된 시간을 기준으로 슬로우 쿼리 로그에 기록할지 여부를 판단하기 때문에 반드시 쿼리가 정상적으로 실행이 왼료되어야 슬로우 쿼리 로그에 기록될 수 있다.
+
+  - __슬로우 쿼리 로그 파일에 기록되는 쿼리는 일단 정상적으로 실행이 완료되었고, 실행하는 데 걸린 시간이 long_query_time에 정의된 시간보다 많이 걸린 쿼리인 것이다.__
+
+  
+
+- log_output 옵션을 이용해 슬로우 쿼리 로그를 파일로 기록할지 테이블로 기록할지 선택할 수 있다.
+
+  - TABLE로 설정하면 로그를 (slow_log 테이블)에 저장
+
+    - log_output 옵션을 TABLE로 설정하더라도 mysql DB의 slow_log 테이블과 general_log 테이블은 CSV 스토리지 엔진을 사용하기 때문에 결국 CSV 파일로 저장하는 것과 동일하게 작동한다.
+
+  - FILE로 설정하면 로그의 내용을 디스크의 파일로 저장한다.
+
+    
+
+- 쿼리 로그 내용을 보는법이나 분석 방법은 메뉴얼 혹은 책을 참조하도록 하자.
