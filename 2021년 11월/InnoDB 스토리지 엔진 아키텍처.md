@@ -289,3 +289,77 @@ UPDATE member SET m_area = '경기' WHERE m_id = 12;
 
   - 데드락 감지 스레드가 부담되어 innodb_deadlock_detect 를 OFF 로 설정해서 비활성화하는 경우라면 innodb_lock_wait_timeout을 기본 값이 50초보다 훨씬 낮은 시간으로 변경해서 사용할 것을 권장한다.
 
+
+
+<br>
+
+***
+
+### 자동화된 장애 복구
+
+- InnoDB에는 손실이나 장애로부터 데이터를 보호하기 위한 여러 가지 메커니즘이 탑재되어 있음
+
+  - MySQL 서버가 시작될 때 완료되지 못한 트랜잭션이나 디스크에 일부만 기록된(Partial write) 데이터 페이지 등에 대한 일련의 복구 작업이 자동으로 진행
+
+    
+
+- InnoDB 스토리지 엔진은 매우 견고해서 데이터 파일이 손상되거나 MySQL 서버가 시작되지 못하는 경우는 거의 발생하지 않음
+
+  
+
+- 하지만 MySQL 서버와 무관하게 디스크나 서버 하드웨어 이슈로 InnoDB 스토리지 엔진이 자동으로 복구를 못 하는 경우도 발생할 수 있는데, 일단 한 번 문제가 생기면 복구하기가 쉽지 않다.
+
+  
+
+- InnoDB 데이터 파일은 기본적으로 MySQL 서버가 시작될 때 항상 자동 복구를 수행한다.
+
+  - 이 단계에서 자동으로 복구될 수 없는 손상이 있다면 자동 복구를 멈추고 MySQL 서버는 종료되어 버린다.
+
+    
+
+  - 이때 MySQL 서버의 설정 파일에 [innodb_force_recovery 시스템 변수](https://dev.mysql.com/doc/refman/5.6/en/innodb-parameters.html#sysvar_innodb_force_recovery)를 설정해서 MySQL 서버를 시작해야 한다.
+
+    - 이 설정값은 MySQL 서버가 시작될 때 InnoDB 스토리지 엔진이 데이터 파일이나 로그 파일의 손상 여부 검사 과정을 선별적으로 진행할 수 있게 한다.
+
+      - InnoDB의 로그 파일이 손상되었다면 6으로 설정하고 MySQL 서버를 기동
+
+        
+
+      - InnoDB 테이블의 데이터 파일이 손상되었다면 1로 설정하고 MySQL 서버를 기동
+
+        
+
+      - 어떤 부분이 문제인지 알 수 없는 경우, Innodb_force_recovery 설정 값을 1부터 6까지 변경하면서, MySQL을 재시작해 보자.
+
+        - innodb_force_recovery 값이 커질수록 그만큼 심각한 상황이어서 데이터 손실 가능성이 커지고 복구 가능성이 적어진다.
+
+          
+
+- MySQL 서버가 기동이 되고, InnoDB 테이블이 인식된다면 [mysqldump](https://dev.mysql.com/doc/refman/5.7/en/mysqldump.html) 를 이용해 데이터를 가능한 만큼 백업하고, 그 데이터로 MySQL 서버의 DB와 테이블을 다시 생성하는 것이 좋다.
+
+
+
+- innodb_force_recovery 의 시스템 변수 변경을 통해 진행했음에도 MySQL 서버가 시작되지 않으면 백업을 이용해 다시 구축하는 방법밖에 없다.
+
+  
+
+- 백업이 있다면 마지막 백업으로 데이터베이스를 새로 구축하고, 바이너리 로그를 사용해 최대한 장애 시점까지의 데이터를 복구할 수도 있다.
+
+  
+
+- 마지막 풀 백업 시점부터 장애 시점까지의 바이너리 로그가 있다면 InnoDB의 복구를 이용하는 것보다 풀 백업과 바이너리 로그로 복구하는 편이 데이터 손실이 더 적을 수 있다.
+
+  
+
+- 백업은 있지만 복제의 바이너리 로그가 없거나 손실됐다면 마지막 백업 시점까지만 복구할 수 있다.
+
+
+
+> 바이너리 로그란?
+>
+> - [MySQL 공홈](https://dev.mysql.com/doc/refman/5.6/en/binary-log.html)
+>
+>   
+>
+> - https://myinfrabox.tistory.com/20
+
