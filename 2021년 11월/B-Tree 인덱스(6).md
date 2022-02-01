@@ -168,6 +168,9 @@ Case B : Index (emp_no, dept_no)
 
     - ...WHERE utf8_bin_char_column = euckr_bin_char_column
 
+
+  - IN 쿼리지만 인덱스를 타지 못하는 경우도 있다.
+   - https://jobc.tistory.com/216 	
       
 
 - 다른 일반적인 DBMS에서는 NULL 값이 인덱스에 저장되지 않지만, MySQL 에서는 NULL값도 인덱스에 저장된다.
@@ -216,7 +219,7 @@ Case B : Index (emp_no, dept_no)
 
 
 
-- 인덱스를 사용하는 겨웅와 그렇지 않은 상황에 해당하는 쿼리의 조건을 몇 가지 살펴보자.
+- 인덱스를 사용하는 경우와 그렇지 않은 상황에 해당하는 쿼리의 조건을 몇 가지 살펴보자.
 
 ```sql
 -- 인덱스 사용 불가
